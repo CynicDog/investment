@@ -42,7 +42,7 @@ Personal portfolio journal. Daily DCA runs at **Toss** (which doesn't expose a t
 
 ## Setup (one-time, after first push to GitHub)
 
-1. **Add repo secret** `ANTHROPIC_API_KEY` (Settings → Secrets and variables → Actions).
+1. **Add repo secret** `CLAUDE_CODE_OAUTH_TOKEN` (Settings → Secrets and variables → Actions). Generate the token with `claude setup-token` in your terminal — uses your Claude Pro/Max subscription instead of metered API credits.
 2. **Workflow permissions**: Settings → Actions → General → set workflow permissions to *Read and write*, allow Actions to create PRs.
 3. **Manually run each workflow once** via `workflow_dispatch` to confirm wiring:
    ```bash

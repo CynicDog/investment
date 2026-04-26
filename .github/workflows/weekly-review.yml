@@ -39,7 +39,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WEEK_TAG: ${{ steps.week.outputs.tag }}
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
             You are running the weekly portfolio review for ${{ github.repository }}.
             Read the prompt definition under `## weekly-review` in `docs/PROMPTS.md` and follow it
