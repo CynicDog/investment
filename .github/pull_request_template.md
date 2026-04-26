@@ -11,12 +11,12 @@
 - [ ] `portfolio/allocation.yml` (high-stakes — explain the new weights)
 - [ ] `portfolio/positions/*.md` (thesis / catalyst / valuation update)
 - [ ] `portfolio/dashboards/*.md` (auto-rendered — should not be hand-edited)
-- [ ] `scripts/*` (renderer / parser changes — verify with `python scripts/render_dashboards.py`)
+- [ ] `scripts/*` (renderer changes — verify with `python scripts/render_dashboards.py`)
 - [ ] `.github/workflows/*` (smoke-tested via `workflow_dispatch`)
 - [ ] `docs/*` or `CLAUDE.md`
 
 ## Verification
 
 - [ ] `python scripts/render_dashboards.py` runs cleanly locally.
-- [ ] No accidental edit to `portfolio/trades.csv` (only the trade-log workflow appends).
 - [ ] No accidental edit inside dashboard `<!-- ... -->` auto-blocks.
+- [ ] Existing `dca-tracker` issues are not affected by this change.

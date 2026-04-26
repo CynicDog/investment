@@ -1,31 +1,34 @@
 # Investment journal
 
-Personal portfolio journal. Tracks target allocation, real cost-basis fills, and uses GitHub Issues + Claude GitHub Action to maintain weekly reviews, earnings event logs, and thesis re-checks.
+Personal portfolio journal. Daily DCA runs at **Toss** (which doesn't expose a trade-history API), so the repo tracks **intent** (target weights, daily DCA $ split) and **confirmation** (a weekly DCA-tracker issue with Mon–Fri checkboxes you tick once Toss confirms each fill). Claude GitHub Action handles weekly reviews, earnings events, and thesis re-checks.
 
-> _This is a personal journal. Not financial advice._
+> _Personal journal. Not financial advice._
 
 ## How it works
 
-- **`portfolio/allocation.yml`** — target weights and per-ticker daily DCA amount.
-- **`portfolio/trades.csv`** — actual fills, dividends, sales (cost-basis source of truth).
+- **`portfolio/allocation.yml`** — target weights and per-ticker daily DCA amount (mirrors what's configured at Toss).
 - **`portfolio/positions/*.md`** — one dossier per holding (thesis, risks, catalysts, valuation, earnings log).
-- **`portfolio/dashboards/*.md`** — auto-rendered Mermaid visuals.
-- **GitHub Issues** — earnings events, thesis reviews, weekly reviews, trade logs. Many issues use `[ ]` checkboxes that the Claude bot ticks when verifiable conditions are met.
+- **`portfolio/dashboards/*.md`** — auto-rendered Mermaid visuals (pie, flowchart, sankey).
+- **GitHub Issues** are the activity log:
+  - Per-ticker dossier discussions (one pinned per holding).
+  - Weekly DCA tracker — five `[ ]` Mon–Fri checkboxes, ticked by hand once Toss fills.
+  - Earnings events, thesis reviews, weekly reviews. Many use `[ ]` items the Claude bot ticks when verifiable.
 
 ## Workflows
 
 | Workflow | When | What it does |
 |----------|------|--------------|
-| `weekly-review.yml` | Fri 21:30 UTC | Opens a weekly review issue with per-ticker updates, drift section, catalyst calendar |
+| `weekly-review.yml` | Fri 21:30 UTC | Opens a weekly review issue: per-ticker updates, DCA tally, catalyst calendar |
 | `earnings-watcher.yml` | Daily 13:00 UTC | Opens earnings issues 7 days ahead; posts recaps after the call |
+| `dca-tracker.yml` | Sun 22:00 UTC (~Mon 07 KST) | Closes prior week's tracker; opens a new Mon–Fri tracker for the week ahead |
 | `claude-mention.yml` | `@claude` in any issue/comment | Claude responds inline |
 | `update-dashboards.yml` | Push to `portfolio/**` | Regenerates dashboards + this README's portfolio block |
-| `issue-checkbox-tick.yml` | Edit on any `auto-tick`-labeled issue | Claude ticks verifiable `[ ]` items |
+| `issue-checkbox-tick.yml` | Edit on `auto-tick`-labeled issues | Claude ticks verifiable `[ ]` items (never on dca-tracker) |
 
 ## Dashboards
 
-- [Allocation pie + drift table](portfolio/dashboards/allocation.md)
-- [DCA flow](portfolio/dashboards/dca-flow.md)
+- [Target allocation pie](portfolio/dashboards/allocation.md)
+- [Capital flow — flowchart + sankey](portfolio/dashboards/dca-flow.md)
 - [Upcoming earnings](portfolio/dashboards/upcoming-earnings.md)
 
 ## Position dossiers
@@ -52,16 +55,16 @@ pie showData title Target allocation
     "IDCC" : 8
 ```
 
-| Ticker | Name | Target | Actual (cost-basis) | Drift (pp) | Shares | Total cost |
-|---|---|---|---|---|---|---|
-| VOO | Vanguard S&P 500 ETF | 32% | 0.00% | -32.00 | 0.0000 | $0.00 |
-| HLNE | Hamilton Lane | 16% | 0.00% | -16.00 | 0.0000 | $0.00 |
-| HALO | Halozyme Therapeutics | 16% | 0.00% | -16.00 | 0.0000 | $0.00 |
-| ETN | Eaton Corp | 16% | 0.00% | -16.00 | 0.0000 | $0.00 |
-| MKL | Markel Group | 12% | 0.00% | -12.00 | 0.0000 | $0.00 |
-| IDCC | InterDigital | 8% | 0.00% | -8.00 | 0.0000 | $0.00 |
+| Ticker | Name | Target | Daily DCA | Role |
+|---|---|---|---|---|
+| VOO | Vanguard S&P 500 ETF | 32% | $32 | Broad market anchor |
+| HLNE | Hamilton Lane | 16% | $16 | Private markets growth |
+| HALO | Halozyme Therapeutics | 16% | $16 | Healthcare royalties |
+| ETN | Eaton Corp | 16% | $16 | AI power infrastructure |
+| MKL | Markel Group | 12% | $12 | Defensive insurance + holding co |
+| IDCC | InterDigital | 8% | $8 | Patent licensing IP |
 
-See [`portfolio/dashboards/allocation.md`](portfolio/dashboards/allocation.md) for the full breakdown including the actual cost-basis pie.
+See [`portfolio/dashboards/allocation.md`](portfolio/dashboards/allocation.md) (pie) and [`portfolio/dashboards/dca-flow.md`](portfolio/dashboards/dca-flow.md) (flowchart + sankey).
 <!-- portfolio-end -->
 
 ## Setup (one-time, after first push to GitHub)

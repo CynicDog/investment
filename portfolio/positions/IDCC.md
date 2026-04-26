@@ -7,11 +7,6 @@
 | Metric | Value |
 |---|---|
 | Target allocation | 8% |
-| Cost-basis allocation | _populated by `render_dashboards.py`_ |
-| Drift (pp) | _populated_ |
-| Shares held | _populated_ |
-| Avg cost basis | _populated_ |
-| Total cost basis | _populated_ |
 | Daily DCA | $8 |
 
 ## Thesis
@@ -62,12 +57,6 @@ _Last refreshed: 2026-04-26 (placeholder)_
 | Quarter | Revenue | EPS | Recurring rev | Notes |
 |---|---|---|---|---|
 | — | — | — | — | — |
-
-## Trades log
-
-<!-- trades-start -->
-_No trades logged yet for this ticker._
-<!-- trades-end -->
 
 ## News & notes
 

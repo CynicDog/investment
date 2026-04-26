@@ -2,7 +2,7 @@
 
 Centralized prompt library for the Claude-driven workflows. Workflows reference sections by anchor (`## weekly-review`, `## earnings-watcher`, `## issue-checkbox-tick`).
 
-When you tweak a prompt here, the next workflow run will pick it up — no workflow yaml change needed.
+When you tweak a prompt here, the next workflow run picks it up — no workflow yaml change needed.
 
 > Tone reminder (always applies): terse, factual, present tense; no predictions; no advice language; cite primary sources inline.
 
@@ -12,10 +12,9 @@ When you tweak a prompt here, the next workflow run will pick it up — no workf
 
 Inputs you must read before writing anything:
 
-- `portfolio/allocation.yml` — target weights, DCA per ticker.
-- `portfolio/trades.csv` — every fill / sale / dividend.
-- `portfolio/dashboards/allocation.md` — current cost-basis allocation + drift table (already refreshed by the workflow before you ran).
+- `portfolio/allocation.yml` — target weights, DCA per ticker (the user has these configured at Toss).
 - Each `portfolio/positions/{TICKER}.md`.
+- Closed `dca-tracker` issues from the past 1–4 weeks: `gh issue list --label dca-tracker --state closed --limit 10 --json number,title,body,closedAt`. From each, count `- [x]` lines to get fills-per-week.
 
 Then web-search the last 7 calendar days of news per ticker. Prefer:
 
@@ -31,10 +30,11 @@ Produce one markdown report. Open it as a new issue titled `Weekly review {ISO-w
 
 _Generated {YYYY-MM-DD}._
 
-## Snapshot
+## DCA confirmation
 
-| Ticker | Target % | Cost-basis % | Drift (pp) | Last close (cited) | Note |
-|---|---|---|---|---|---|
+- This week: {N}/5 days confirmed at Toss.
+- Trailing 4 weeks: {N1}/5, {N2}/5, {N3}/5, {N4}/5.
+- Notes: any missed days the user flagged in dca-tracker issue comments.
 
 ## Per-position update
 
@@ -49,11 +49,6 @@ _Generated {YYYY-MM-DD}._
 
 - {date}: {ticker} — {event} — {issue link if open}
 
-## Cash & opportunistic adds
-
-- Cash drift: {actual_pp} vs target 5% → {±X pp}.
-- If cash is over-target by >1pp: list 1–3 names trading meaningfully below thesis-implied value (cite valuation source). Frame as observations, not recommendations.
-
 ## Disclaimers
 
 _Personal journal. Not financial advice. Sources cited inline._
@@ -63,7 +58,8 @@ Constraints:
 
 - Do NOT modify any file in this run except a scratch markdown file you create for the issue body.
 - Do NOT change any weights or thesis text in `positions/*.md`.
-- If you cannot find a primary source for a number, mark it `(unverified)` rather than guess.
+- Do NOT comment on or edit any `dca-tracker` issue.
+- If you cannot find a primary source for a number, mark it `(unverified)`.
 
 ---
 
@@ -82,7 +78,7 @@ Loop per ticker. For each:
    - Compute quarter label (e.g. `1Q26` for Jan–Mar 2026).
    - Open a new issue with title `Earnings: {TICKER} {QQ}{YY}`, labels `earnings,auto-tick`. Body should mirror the `earnings-event.yml` template, populated with the date and any pre-call expectations from prior-quarter guidance you can cite.
 4. If an issue exists for a ticker whose earnings was **in the past 0–3 days** AND its body lacks a `### Recap` block:
-   - Web-search the press release + transcript (transcripts may take 1–2 days; if not available, post a partial recap based on the press release alone and add `_transcript pending_`).
+   - Web-search the press release + transcript (transcripts may take 1–2 days; if not yet, post a partial recap based on the press release alone and add `_transcript pending_`).
    - Post a comment on the issue with the recap shape:
      ```markdown
      ### Recap
@@ -94,43 +90,42 @@ Loop per ticker. For each:
      ```
    - Edit the issue body to flip `[ ] Earnings released` → `[x]` and `[ ] Recap published` → `[x]`. Leave the others untouched.
 
-Be conservative. If anything looks wrong, no-op and explain in a comment on a single tracking issue (open one if needed) — better to skip a day than to publish a wrong date.
+Be conservative. If anything looks wrong, no-op and explain in a comment on a single tracking issue. Better to skip a day than publish a wrong date.
 
 ---
 
 ## issue-checkbox-tick
 
-You are reviewing one issue (number is in `$ISSUE_NUMBER`). Goal: tick `[ ] → [x]` for items that are now objectively verifiable. Never tick anything subjective.
+You are reviewing one issue (number is in `$ISSUE_NUMBER`). Goal: tick `[ ] → [x]` for items that are now objectively verifiable.
+
+Hard rules:
+
+- **Never tick anything in a `dca-tracker`-labeled issue.** Those represent real money at the user's broker — only the user confirms. If the issue carries that label, exit silently.
+- **Never tick subjective items.** Examples: "Thesis-impact assessed", "Action taken", "Allocation in line with target".
+- **Never untick** (`[x] → [ ]`).
+- **Never edit any file in the repository.** This workflow only modifies issue text.
+- **Never tick more than 5 items in a single run**; if there are more, tick the first 5 and note the cap.
 
 Steps:
 
 1. `gh issue view "$ISSUE_NUMBER" --json body,title,labels,comments` — read the full state.
-2. For each `- [ ]` line in the body, classify:
-   - **Auto-tickable** — the criterion is objective and you can verify it from issue context, repo state, or the public web with citation.
-     Examples:
+2. Bail out immediately if labels include `dca-tracker`.
+3. For each `- [ ]` line in the body, classify:
+   - **Auto-tickable** — the criterion is objective and you can verify it from issue context, repo state, or the public web with citation. Examples:
      - `[ ] Earnings released` — verifiable if earnings date in issue body has passed AND a primary press release exists.
      - `[ ] 10-Q filed` — verifiable from SEC EDGAR.
      - `[ ] Recap published` — verifiable if a comment with `### Recap` exists on the issue.
-     - `[ ] Position file thesis section updated` — verifiable from `git log -1 portfolio/positions/{TICKER}.md` after a relevant date.
    - **Subjective** — leave alone.
-     Examples:
-     - `[ ] Thesis-impact assessed`
-     - `[ ] Action taken`
-3. For each auto-tickable item you confirmed, build the new body with that line flipped (preserving everything else byte-for-byte).
-4. `gh issue edit "$ISSUE_NUMBER" --body-file <new>`.
-5. Post ONE comment listing what you ticked and the evidence, e.g.:
+4. For each auto-tickable item you confirmed, build the new body with that line flipped (preserving everything else byte-for-byte).
+5. `gh issue edit "$ISSUE_NUMBER" --body-file <new>`.
+6. Post ONE comment listing what you ticked and the evidence:
    ```
    Auto-ticked:
    - `[x] Earnings released` — confirmed by press release dated 2026-05-06: <url>
    - `[x] Recap published` — comment #N has `### Recap` block.
    Left untouched: `[ ] Thesis-impact assessed` (subjective).
    ```
-6. If nothing is verifiable, do NOT post a comment. Exit silently.
-
-Hard rules:
-- Never flip `[x] → [ ]`. Untick is never within scope.
-- Never edit any file in the repository. This workflow only modifies issue text.
-- Never tick more than 5 items in a single run; if there are more, tick the first 5 and note the cap.
+7. If nothing is verifiable, post nothing. Exit silently.
 
 ---
 

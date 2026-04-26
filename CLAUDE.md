@@ -4,34 +4,40 @@ This file is read by Claude (Code, Action, and any agent operating in this repo)
 
 ## What this repo is
 
-A personal portfolio journal. Source of truth for **target allocation** and **actual cost-basis trades**. Automated workflows produce weekly reviews, manage earnings-event issues, and keep dashboards in sync. This is a journal — **not a brokerage account, not financial advice**.
+A personal portfolio journal. The user runs daily DCA at **Toss** (a Korean broker), which the user cannot automate from GitHub. What this repo *can* automate:
+
+- The thesis side: target allocation, per-position dossiers, news + earnings tracking, weekly reviews.
+- The DCA confirmation side: a weekly issue with Mon–Fri checkboxes that the user ticks once Toss confirms each daily fill. Closed weekly issues are the journal of what actually filled.
+
+This is a journal — **not a brokerage account, not financial advice**.
 
 ## Layout
 
 | Path | What it is | Who writes it |
 |------|------------|---------------|
-| `portfolio/allocation.yml` | Target weights + DCA $ per ticker | User only (rare edits) |
-| `portfolio/trades.csv` | Cost-basis source of truth — every fill, dividend, sale | Trade-log workflow only |
+| `portfolio/allocation.yml` | Target weights + the daily DCA $ amount the user has configured at Toss | User only (rare edits) |
 | `portfolio/positions/*.md` | Per-ticker dossier (thesis, valuation, news log) | User + weekly-review workflow appends to `News & notes` |
 | `portfolio/dashboards/*.md` | Mermaid visuals — auto-rendered | `scripts/render_dashboards.py` only |
 | `docs/PROMPTS.md` | Centralized prompt library used by workflows | User |
-| `docs/METHODOLOGY.md` | How rundowns are produced; weight math; disclaimers | User |
-| `README.md` | Front page — has an auto-updated portfolio block between `<!-- portfolio-start -->` / `<!-- portfolio-end -->` markers | Auto inside markers; user outside |
+| `docs/METHODOLOGY.md` | How rundowns are produced; disclaimers | User |
+| `README.md` | Front page — auto-updated portfolio block between `<!-- portfolio-start -->` / `<!-- portfolio-end -->` markers | Auto inside markers; user outside |
+
+There is **no** trades CSV, no cost-basis math, no actual share-count tracking. Daily DCA execution lives at Toss; the dca-tracker issues are the only confirmation record.
 
 ## Tone for any output you produce
 
 - **Terse, factual, present tense.** Bullets over paragraphs. No filler.
 - **No predictions.** Never say a stock "will" do anything. Frame as "as of {date}, X is reported / disclosed / expected per company guidance / consensus."
-- **No advice language.** Never use "should buy", "should sell", "recommend buying". You may say "drift exceeds threshold" or "cash > target by Xpp" — those are observations, not advice.
-- **Cite sources inline.** When using web search, link the primary source (10-K, 10-Q, 8-K, press release, earnings call transcript). Aggregator articles are last resort.
-- **Disclaimer footer** on any new public-facing artifact: `_This is a personal journal. Not financial advice._`
+- **No advice language.** Never use "should buy", "should sell", "recommend buying". Frame as observations.
+- **Cite sources inline.** When using web search, link the primary source (10-K, 10-Q, 8-K, press release, earnings call transcript).
+- **Disclaimer footer** on any new public-facing artifact: `_Personal journal. Not financial advice._`
 
 ## Web search rules
 
 - Weekly review: prefer last 7 days.
 - Earnings recap: prefer the company's own press release + transcript, then 10-Q if filed.
 - Quote dollar values, EPS, revenue with the unit and the period (e.g. `Q1 FY26 revenue $X.XXB, +X% YoY`).
-- If a number disagrees across sources, list both and flag the discrepancy — do not pick one silently.
+- If a number disagrees across sources, list both and flag the discrepancy.
 
 ## Issue management
 
@@ -41,24 +47,24 @@ Labels:
 - `weekly-review` — weekly review reports
 - `earnings` — per-quarter earnings tracking
 - `thesis-review` — quarterly thesis re-check
-- `trade-log` — fill submission (closed automatically by workflow)
+- `dca-tracker` — weekly Mon–Fri DCA confirmation checklist
 - `auto-tick` — issue is eligible for automated `[ ]` → `[x]` ticking
 
 Use `gh issue create` / `gh issue comment` / `gh api` for issue work. Title conventions:
 
 - Weekly review: `Weekly review YYYY-Www`
-- Earnings event: `Earnings: {TICKER} {Q}Q{YY}` (e.g. `Earnings: HALO 1Q26`)
+- Earnings event: `Earnings: {TICKER} {Q}Q{YY}`
 - Thesis review: `Thesis review: {TICKER} {Q}Q{YY}`
-- Trade log: `Trade: {TICKER} {YYYY-MM-DD}` (auto-closed)
+- DCA tracker: `DCA tracker: week of YYYY-MM-DD`
 
 ## What you must never do
 
-1. **Never edit `portfolio/trades.csv` directly.** Only the trade-log workflow appends rows. If a user asks you to add a trade, point them to the trade-log issue template.
-2. **Never edit `portfolio/allocation.yml`** unless the user explicitly states the new weights in that turn. This is a high-stakes file.
+1. **Never tick boxes in `dca-tracker` issues.** Those represent real money at the user's broker — only the user confirms a fill. Even with the `auto-tick` label workflow, exclude `dca-tracker` issues.
+2. **Never edit `portfolio/allocation.yml`** unless the user explicitly states the new weights in that turn. High-stakes file.
 3. **Never write into `portfolio/dashboards/*.md` by hand.** They are regenerated by `scripts/render_dashboards.py`. If a dashboard needs structural changes, edit the script.
-4. **Never push prices, EPS, or forecasts as facts** without citing the source you read them from. If you can't cite, mark the value as `(unverified)`.
-5. **Never close `position` issues** — they are pinned dossiers and remain open indefinitely.
-6. **Never modify the auto-region of `README.md` outside the markers** — and never write inside the markers from a tool other than the dashboards script.
+4. **Never push prices, EPS, or forecasts as facts** without citing the source. If you can't cite, mark `(unverified)`.
+5. **Never close `position` issues** — pinned dossiers, open indefinitely.
+6. **Never modify the auto-region of `README.md` outside the markers** — and never write inside the markers from anything other than the dashboards script.
 
 ## Useful commands
 
@@ -69,10 +75,10 @@ python scripts/render_dashboards.py
 # List open weekly reviews
 gh issue list --label weekly-review --state open
 
-# Open an earnings issue from template
-gh issue create --template earnings-event.yml
+# Current DCA tracker
+gh issue list --label dca-tracker --state open
 ```
 
 ## Disclaimer
 
-Everything in this repo is one investor's journal. Positions, weights, and notes reflect personal opinion as of the date written and may be wrong, stale, or revised without notice. Not financial advice.
+Everything here is one investor's journal. Positions, weights, and notes reflect personal opinion as of the date written and may be wrong, stale, or revised without notice. Not financial advice.

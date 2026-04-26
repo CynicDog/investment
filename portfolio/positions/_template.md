@@ -13,11 +13,6 @@ unless you also update the workflow that touches them.
 | Metric | Value |
 |---|---|
 | Target allocation | {X}% |
-| Cost-basis allocation | _populated by `render_dashboards.py`_ |
-| Drift (pp) | _populated_ |
-| Shares held | _populated_ |
-| Avg cost basis | _populated_ |
-| Total cost basis | _populated_ |
 | Daily DCA | ${X} |
 
 ## Thesis
@@ -68,12 +63,6 @@ _Last refreshed: YYYY-MM-DD (weekly review)_
 | — | — | — | — | — |
 | — | — | — | — | — |
 | — | — | — | — | — |
-
-## Trades log
-
-<!-- trades-start -->
-_Auto-rendered by `scripts/render_dashboards.py` from `trades.csv` filtered by ticker._
-<!-- trades-end -->
 
 ## News & notes
 
