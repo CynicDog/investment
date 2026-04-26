@@ -59,8 +59,6 @@ def short_sector(s: str) -> str:
     return s.split("/")[0].strip()
 
 
-# ---------- renderers ----------
-
 def render_allocation_md(allocation: dict) -> str:
     pie = "\n".join(
         f'    "{p["ticker"]}" : {p["target_pct"]}'
@@ -165,8 +163,6 @@ pie showData title Target allocation
 
 See [`portfolio/dashboards/allocation.md`](portfolio/dashboards/allocation.md) (pie) and [`portfolio/dashboards/dca-flow.md`](portfolio/dashboards/dca-flow.md) (flowchart + sankey)."""
 
-
-# ---------- top-level ----------
 
 def main() -> int:
     allocation = load_allocation()
