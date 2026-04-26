@@ -27,9 +27,8 @@ Personal portfolio journal. Daily DCA runs at **Toss** (which doesn't expose a t
 
 ## Dashboards
 
-- [Target allocation pie](portfolio/dashboards/allocation.md)
-- [Capital flow — flowchart + sankey](portfolio/dashboards/dca-flow.md)
-- [Upcoming earnings](portfolio/dashboards/upcoming-earnings.md)
+- [Capital flow — sankey](portfolio/dashboards/dca-flow.md) — auto-generated from `allocation.yml`
+- [Upcoming earnings](portfolio/dashboards/upcoming-earnings.md) — managed by `earnings-watcher.yml`
 
 ## Position dossiers
 
@@ -39,33 +38,6 @@ Personal portfolio journal. Daily DCA runs at **Toss** (which doesn't expose a t
 - [ETN — Eaton Corp](portfolio/positions/ETN.md)
 - [MKL — Markel Group](portfolio/positions/MKL.md)
 - [IDCC — InterDigital](portfolio/positions/IDCC.md)
-
-## Portfolio summary
-
-<!-- portfolio-start -->
-_Last refreshed: 2026-04-26_
-
-```mermaid
-pie showData title Target allocation
-    "VOO" : 32
-    "HLNE" : 16
-    "HALO" : 16
-    "ETN" : 16
-    "MKL" : 12
-    "IDCC" : 8
-```
-
-| Ticker | Name | Target | Daily DCA | Role |
-|---|---|---|---|---|
-| VOO | Vanguard S&P 500 ETF | 32% | $32 | Broad market anchor |
-| HLNE | Hamilton Lane | 16% | $16 | Private markets growth |
-| HALO | Halozyme Therapeutics | 16% | $16 | Healthcare royalties |
-| ETN | Eaton Corp | 16% | $16 | AI power infrastructure |
-| MKL | Markel Group | 12% | $12 | Defensive insurance + holding co |
-| IDCC | InterDigital | 8% | $8 | Patent licensing IP |
-
-See [`portfolio/dashboards/allocation.md`](portfolio/dashboards/allocation.md) (pie) and [`portfolio/dashboards/dca-flow.md`](portfolio/dashboards/dca-flow.md) (flowchart + sankey).
-<!-- portfolio-end -->
 
 ## Setup (one-time, after first push to GitHub)
 

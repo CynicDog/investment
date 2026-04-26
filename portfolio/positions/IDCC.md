@@ -65,7 +65,7 @@ _Last refreshed: 2026-04-26 (placeholder)_
 
 ## Re-check schedule
 
-- Quarterly thesis review issue: _link once opened_
+- Monthly thesis review issue: _link once opened_
 - Next earnings: _populated by earnings-watcher_
 
 ---

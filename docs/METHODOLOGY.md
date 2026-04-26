@@ -9,7 +9,7 @@ How rundowns and dashboards are produced. If you change any of the math or the w
 | `portfolio/allocation.yml` | Yes (rare, deliberate) | No |
 | `portfolio/positions/*.md` | Yes (thesis sections) | Yes (only `<!-- news-start --> / news-end` block by weekly review) |
 | `portfolio/dashboards/*.md` | **No** — fully regenerated | Yes (`render_dashboards.py`) |
-| `README.md` | Yes (outside markers) | Yes (inside `<!-- portfolio-start --> / portfolio-end` markers) |
+| `README.md` | Yes | No |
 
 The user runs the actual daily DCA at **Toss**, which does not expose a trade-history API. The repo therefore tracks **intent** (target weights, daily DCA $ allocations as configured at Toss) and **confirmation** (weekly DCA tracker issues with `[ ]` checkboxes), not real broker fills. There is no trades.csv, no cost-basis tracking, no share-count math.
 
@@ -26,16 +26,11 @@ A bullet is **never** ticked by automation. Even though `dca-tracker` issues are
 
 ## Dashboards (what the renderer produces)
 
-`scripts/render_dashboards.py` is dependency-free except for PyYAML, deterministic, and runs in <1 second. It reads `portfolio/allocation.yml` and writes:
+`scripts/render_dashboards.py` is dependency-free except for PyYAML, deterministic, and runs in <1 second. It reads `portfolio/allocation.yml` and writes a single file:
 
-- **`dashboards/allocation.md`** — target allocation pie (mermaid).
-- **`dashboards/dca-flow.md`** — daily $ split as both:
-  - a flowchart `Daily $X → ticker $Y` (six edges)
-  - a sankey-beta diagram grouped by sector: `Daily $X → sector → ticker`. Sectors are derived from `positions[].sector`, truncated at the first `/` for clean node labels.
-- **`dashboards/upcoming-earnings.md`** — placeholder until `earnings-watcher.yml` populates it.
-- **`README.md`** — refreshes the auto-block between markers with the target pie + a 5-column position table.
+- **`dashboards/dca-flow.md`** — sankey-beta diagram grouped by sector: `Daily $X → sector → ticker`. Sectors are derived from `positions[].sector`, truncated at the first `/` for clean node labels.
 
-There is no actual-allocation pie, no drift table, no market-value math. Allocation drift is observed visually at Toss.
+`dashboards/upcoming-earnings.md` is owned by `earnings-watcher.yml`, not the renderer. There is no allocation pie, no drift table, no market-value math. Allocation drift is observed visually at Toss.
 
 ## Workflow contracts
 

@@ -44,7 +44,7 @@ jobs:
             verbatim. Inputs you must read:
               - portfolio/allocation.yml
               - portfolio/trades.csv
-              - portfolio/dashboards/allocation.md
+              - portfolio/dashboards/dca-flow.md
               - portfolio/positions/*.md
             When the report is complete, open a NEW GitHub issue with:
               - title: "Weekly review ${WEEK_TAG}"

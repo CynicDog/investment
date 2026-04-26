@@ -72,7 +72,7 @@ _Weekly review action appends dated bullets here. Most recent first._
 
 ## Re-check schedule
 
-- Quarterly thesis review issue: _link once opened_
+- Monthly thesis review issue: _link once opened_
 - Next earnings (estimated): _populated by earnings-watcher_
 
 ---

@@ -1,6 +1,6 @@
-name: Quarterly thesis review
-description: Quarterly re-check of a position's thesis. Does it still hold?
-title: "Thesis review: {TICKER} {Q}Q{YY}"
+name: Monthly thesis review
+description: Monthly re-check of a position's thesis. Does it still hold?
+title: "Thesis review: {TICKER} {YYYY-MM}"
 labels: ["thesis-review"]
 body:
   - type: input
@@ -11,10 +11,10 @@ body:
       required: true
 
   - type: input
-    id: quarter
+    id: month
     attributes:
-      label: Quarter being reviewed
-      placeholder: "1Q26"
+      label: Month being reviewed
+      placeholder: "2026-04"
     validations:
       required: true
 
@@ -44,7 +44,7 @@ body:
     id: action
     attributes:
       label: Action taken or planned
-      placeholder: e.g. trim 2pp into cash; raise target by 2pp; no change
+      placeholder: e.g. trim target weight by 2pp; raise by 2pp; no change
     validations:
       required: true
 
@@ -55,4 +55,3 @@ body:
       value: |
         - [ ] Position file thesis section updated
         - [ ] `allocation.yml` updated (if weights changed)
-        - [ ] Trade(s) logged via trade-log template (if any)
