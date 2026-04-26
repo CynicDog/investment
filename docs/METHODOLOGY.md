@@ -54,6 +54,12 @@ A bullet is **never** ticked by automation. Even though `dca-tracker` issues are
 - **Writes**: closes prior week's tracker; opens a new tracker issue.
 - **No Claude involvement.**
 
+### `thesis-review.yml`
+- **Triggers**: 1st of each month, 22:00 UTC, plus `workflow_dispatch`.
+- **Reads**: `allocation.yml` (ticker list); existing `thesis-review` issues to dedupe.
+- **Writes**: opens one issue per ticker titled `Thesis review: {TICKER} {YYYY-MM}` for the just-completed month. Idempotent — re-running the same month is a no-op.
+- **No Claude involvement.**
+
 ### `issue-checkbox-tick.yml`
 - **Triggers**: edits/comments on `auto-tick`-labeled issues only.
 - **Writes**: edits the issue body to flip `[ ] → [x]` for verifiable items only; posts one comment listing what was ticked and why.

@@ -1,0 +1,88 @@
+name: Monthly thesis review opener
+
+# Opens one thesis-review issue per ticker for the just-completed month.
+# Runs at 22:00 UTC on the 1st of each month. The user fills each in
+# sometime during the new month.
+
+on:
+  schedule:
+    - cron: "0 22 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  open:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install deps
+        run: pip install -r scripts/requirements.txt
+
+      - name: Compute prior month tag
+        id: month
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          from datetime import date
+          today = date.today()
+          y, m = (today.year - 1, 12) if today.month == 1 else (today.year, today.month - 1)
+          print(f"tag={y:04d}-{m:02d}")
+          PY
+
+      - name: Open one thesis-review issue per ticker
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ steps.month.outputs.tag }}
+        run: |
+          set -e
+          tickers=$(python3 -c 'import yaml; d=yaml.safe_load(open("portfolio/allocation.yml")); print(" ".join(p["ticker"] for p in d["positions"]))')
+          for tkr in $tickers; do
+            # Skip if an issue with the same title already exists.
+            existing=$(gh issue list -R "$REPO" --label thesis-review --search "Thesis review: $tkr $TAG in:title" --state all --json number -q '.[].number' | head -1)
+            if [ -n "$existing" ]; then
+              echo "Skip $tkr — issue #$existing already exists."
+              continue
+            fi
+            body=$(cat <<EOF
+          Reviewing the thesis for **$tkr** for **$TAG**.
+
+          Dossier: \`portfolio/positions/$tkr.md\`
+
+          ### Does the thesis still hold?
+
+          _(yes / partially / no — and the one-sentence why)_
+
+          ### What changed in the bull case?
+
+          _…_
+
+          ### What changed in the bear case / risks?
+
+          _…_
+
+          ### Action taken or planned
+
+          _(e.g. trim 2pp; raise 2pp; no change)_
+
+          ### Checklist
+
+          - [ ] Position file thesis section updated
+          - [ ] \`allocation.yml\` updated (if weights changed)
+
+          _Personal journal. Not financial advice._
+          EOF
+          )
+            gh issue create -R "$REPO" \
+              --title "Thesis review: $tkr $TAG" \
+              --label thesis-review \
+              --body "$body"
+          done

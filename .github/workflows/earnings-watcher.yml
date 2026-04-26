@@ -9,6 +9,8 @@ on:
 permissions:
   contents: read
   issues: write
+  id-token: write
+  actions: read
 
 jobs:
   watch:

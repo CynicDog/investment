@@ -21,6 +21,7 @@ Personal portfolio journal. Daily DCA runs at **Toss** (which doesn't expose a t
 | `weekly-review.yml` | Fri 21:30 UTC | Opens a weekly review issue: per-ticker updates, DCA tally, catalyst calendar |
 | `earnings-watcher.yml` | Daily 13:00 UTC | Opens earnings issues 7 days ahead; posts recaps after the call |
 | `dca-tracker.yml` | Sun 22:00 UTC (~Mon 07 KST) | Closes prior week's tracker; opens a new Mon–Fri tracker for the week ahead |
+| `thesis-review.yml` | 1st of each month, 22:00 UTC | Opens one thesis-review issue per ticker for the just-completed month |
 | `claude-mention.yml` | `@claude` in any issue/comment | Claude responds inline |
 | `update-dashboards.yml` | Push to `portfolio/**` | Regenerates dashboards + this README's portfolio block |
 | `issue-checkbox-tick.yml` | Edit on `auto-tick`-labeled issues | Claude ticks verifiable `[ ]` items (never on dca-tracker) |

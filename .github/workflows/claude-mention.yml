@@ -12,6 +12,8 @@ permissions:
   contents: read
   issues: write
   pull-requests: write
+  id-token: write
+  actions: read
 
 jobs:
   claude:
