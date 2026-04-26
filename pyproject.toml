@@ -1,0 +1,23 @@
+[project]
+name = "investment-journal"
+version = "0.1.0"
+description = "Pydantic DSL for the investment portfolio journal — schemas + renderers for allocation, dossiers, risks, reviews, earnings, DCA tracker."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.7",
+    "pyyaml>=6.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.5"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = "src"
+module-name = "investment_journal"

@@ -1,76 +1,125 @@
 # CLAUDE.md — repo guide for Claude
 
-This file is read by Claude (Code, Action, and any agent operating in this repo) on every invocation. Read it before doing anything.
+This file is read on every Claude Code or Claude GitHub Action invocation. Read it before doing anything.
 
 ## What this repo is
 
-A personal portfolio journal. The user runs daily DCA at **Toss** (a Korean broker), which the user cannot automate from GitHub. What this repo *can* automate:
+A personal portfolio journal for an investor who DCAs daily at **Toss** (a Korean broker that exposes no trade-history API). Workflows track:
 
-- The thesis side: target allocation, per-position dossiers, news + earnings tracking, weekly reviews.
-- The DCA confirmation side: a weekly issue with Mon–Fri checkboxes that the user ticks once Toss confirms each daily fill. Closed weekly issues are the journal of what actually filled.
+- **Intent** — target weights + per-ticker daily DCA $ in `portfolio/allocation.yml`.
+- **Confirmation** — a weekly DCA tracker issue with Mon–Fri checkboxes the user ticks once Toss confirms each fill.
+- **Theses & events** — per-position dossiers, monthly thesis review issues, per-quarter earnings issues, weekly review issues.
+- **Risks** — every concern surfaced in a review becomes a versioned `risks/*.yml` file plus a child discussion issue. A pinned `Risks Index` issue aggregates all open risks.
 
-This is a journal — **not a brokerage account, not financial advice**.
+Not a brokerage account. Not financial advice.
+
+## DSL (you must read and use it)
+
+Everything the repo produces has a Pydantic schema in `src/investment_journal/`. Models:
+
+| Model | File | Purpose |
+|---|---|---|
+| `Allocation`, `Position`, `DCA` | `models/allocation.py` | Validates `portfolio/allocation.yml`. Enforces weights sum to 100 and per-position DCA sums to total. |
+| `Dossier` | `models/dossier.py` | Header + required-sections validator over `portfolio/positions/*.md`. Prose stays freeform markdown. |
+| `Risk`, `Severity`, `RiskStatus` | `models/risk.py` | One yaml per risk under `risks/`. Resolved risks must carry `resolved_on` + `resolution_note`. |
+| `WeeklyReview`, `PositionUpdate`, `Catalyst`, `DCASnapshot`, `ThesisStatus` | `models/weekly_review.py` | Shape of a weekly review issue body. |
+| `ThesisReview`, `ThesisVerdict` | `models/thesis_review.py` | Shape of a monthly thesis review issue body. |
+| `EarningsEvent`, `EarningsRecap` | `models/earnings_event.py` | Shape of an earnings issue (pre-call prep + post-call recap). |
+| `DCATracker`, `DCATick` | `models/dca_tracker.py` | Weekly Mon–Fri tracker. Construct via `DCATracker.fresh(monday)`. |
+| `Tone`, `TONE_RULES`, `DISCLAIMER` | `models/tone.py` | Codified tone rules. Always append `DISCLAIMER` to top-level issue bodies. |
+
+Renderers (`src/investment_journal/render/`) turn models into markdown:
+
+```python
+from investment_journal import Risk, WeeklyReview
+from investment_journal.render import render_risk_issue, render_weekly_review
+
+# Build a model, render, post
+body = render_weekly_review(my_weekly_review, risks_lookup={r.id: r for r in all_risks})
+```
+
+When in doubt: `uv run python -c "from investment_journal import <Thing>; help(<Thing>)"`.
+
+## Filing a risk
+
+**Never write `risks/*.yml` by hand from a workflow.** Use the helper:
+
+```bash
+uv run python scripts/file_a_risk.py \
+  --title "HALO single-deal dependency on Vertex Hypercon expansion" \
+  --severity medium \
+  --surfaced-in "weekly-review/2026-W17" \
+  --ticker HALO \
+  --description "The 2026-04-07 Vertex deal concentrates near-term Hypercon royalty growth on a single counterparty's program execution." \
+  --monitor-for "Vertex Phase II/III readouts on Hypercon-formulated assets; additional Hypercon licensee announcements."
+```
+
+The script picks the next free `R-YYYY-MM-NNN` id, writes the yaml, opens a child issue (label `risk`), back-fills the issue number into the yaml, and prints `{"id":"...","issue_number":N,...}` JSON to stdout. Reference the id in the parent review issue's Risks section so it shows up linked.
+
+The workflow that called Claude (`weekly-review.yml`, `earnings-watcher.yml`) commits + pushes the new yaml after Claude finishes. The push triggers `risks-index-sync.yml`, which regenerates the pinned **Risks Index** issue body.
 
 ## Layout
 
 | Path | What it is | Who writes it |
-|------|------------|---------------|
-| `portfolio/allocation.yml` | Target weights + the daily DCA $ amount the user has configured at Toss | User only (rare edits) |
-| `portfolio/positions/*.md` | Per-ticker dossier (thesis, valuation, news log) | User + weekly-review workflow appends to `News & notes` |
-| `portfolio/dashboards/*.md` | Mermaid visuals — auto-rendered | `scripts/render_dashboards.py` only |
-| `docs/PROMPTS.md` | Centralized prompt library used by workflows | User |
-| `docs/METHODOLOGY.md` | How rundowns are produced; disclaimers | User |
-| `README.md` | Front page — entirely user-maintained | User |
-
-There is **no** trades CSV, no cost-basis math, no actual share-count tracking. Daily DCA execution lives at Toss; the dca-tracker issues are the only confirmation record.
+|---|---|---|
+| `pyproject.toml` / `uv.lock` | Project metadata + lockfile (uv) | User; locked by CI |
+| `src/investment_journal/` | Pydantic DSL + renderers | User |
+| `tests/test_models.py` | Smoke tests | User |
+| `portfolio/allocation.yml` | Target weights + DCA $ | User only (rare) |
+| `portfolio/positions/*.md` | Per-ticker dossier (thesis prose) | User + weekly review may append to `<!-- news-start --> ... <!-- news-end -->` block |
+| `portfolio/dashboards/dca-flow.md` | Sankey, regenerated | `scripts/render_dashboards.py` only |
+| `risks/R-*.yml` | Risk records (one per risk) | `scripts/file_a_risk.py` (Claude or human) |
+| `risks/README.md` | Format + lifecycle of risks | User |
+| `docs/PROMPTS.md` | Centralized Claude prompts | User |
+| `docs/METHODOLOGY.md` | How the system works | User |
+| `README.md` | Front page | User |
 
 ## Tone for any output you produce
 
-- **Terse, factual, present tense.** Bullets over paragraphs. No filler.
-- **No predictions.** Never say a stock "will" do anything. Frame as "as of {date}, X is reported / disclosed / expected per company guidance / consensus."
-- **No advice language.** Never use "should buy", "should sell", "recommend buying". Frame as observations.
-- **Cite sources inline.** When using web search, link the primary source (10-K, 10-Q, 8-K, press release, earnings call transcript).
-- **Disclaimer footer** on any new public-facing artifact: `_Personal journal. Not financial advice._`
-
-## Web search rules
-
-- Weekly review: prefer last 7 days.
-- Earnings recap: prefer the company's own press release + transcript, then 10-Q if filed.
-- Quote dollar values, EPS, revenue with the unit and the period (e.g. `Q1 FY26 revenue $X.XXB, +X% YoY`).
+- Terse, factual, present tense. Bullets over paragraphs.
+- No predictions ("X will…"). Frame as "as of {date}, X is reported / disclosed / expected per company guidance / consensus".
+- No advice language. No "should buy / sell / recommend".
+- Cite primary sources inline (10-K, 10-Q, 8-K, IR press release, transcript). Aggregator articles are last resort.
+- Numbers: include unit (USD/%) and period (TTM, YoY, QoQ).
 - If a number disagrees across sources, list both and flag the discrepancy.
+- End every top-level issue body you author with `_Personal journal. Not financial advice._` (or import `DISCLAIMER` from the DSL).
 
-## Issue management
+## Issue labels
 
-Labels:
-
-- `position` — per-ticker dossier issue (pinned)
+- `position` — per-ticker dossier discussion (currently unpinned by user choice)
 - `weekly-review` — weekly review reports
 - `earnings` — per-quarter earnings tracking
-- `thesis-review` — monthly thesis re-check
-- `dca-tracker` — weekly Mon–Fri DCA confirmation checklist
-- `auto-tick` — issue is eligible for automated `[ ]` → `[x]` ticking
-
-Use `gh issue create` / `gh issue comment` / `gh api` for issue work. Title conventions:
-
-- Weekly review: `Weekly review YYYY-Www`
-- Earnings event: `Earnings: {TICKER} {Q}Q{YY}`
-- Thesis review: `Thesis review: {TICKER} {YYYY-MM}`
-- DCA tracker: `DCA tracker: week of YYYY-MM-DD`
+- `thesis-review` — monthly thesis re-check (one per ticker per month)
+- `dca-tracker` — weekly DCA confirmation checklist
+- `risk` — child discussion issue for one risk record (canonical state in `risks/<id>.yml`)
+- `risks-index` — the single pinned Risks Index issue
+- `auto-tick` — eligible for `[ ]→[x]` automation by `issue-checkbox-tick.yml`
 
 ## What you must never do
 
-1. **Never tick boxes in `dca-tracker` issues.** Those represent real money at the user's broker — only the user confirms a fill. Even with the `auto-tick` label workflow, exclude `dca-tracker` issues.
-2. **Never edit `portfolio/allocation.yml`** unless the user explicitly states the new weights in that turn. High-stakes file.
-3. **Never write into `portfolio/dashboards/dca-flow.md` by hand.** It is regenerated from `allocation.yml` by `scripts/render_dashboards.py`. If the sankey needs structural changes, edit the script. (`upcoming-earnings.md` is owned by `earnings-watcher.yml`.)
-4. **Never push prices, EPS, or forecasts as facts** without citing the source. If you can't cite, mark `(unverified)`.
-5. **Never close `position` issues** — pinned dossiers, open indefinitely.
-6. **Never modify `README.md`** unless the user asks. The README is fully hand-maintained.
+1. **Never tick a `dca-tracker` issue.** Those represent real money — only the user confirms.
+2. **Never edit `risks/*.yml` by hand from a workflow.** Use `scripts/file_a_risk.py` to file new risks; for resolution, instruct the user to set `status: resolved` + `resolved_on` + `resolution_note` and push.
+3. **Never edit `portfolio/allocation.yml`** unless the user explicitly states the new weights in the same turn.
+4. **Never write `portfolio/dashboards/dca-flow.md` by hand.** It's regenerated by `scripts/render_dashboards.py`.
+5. **Never push prices, EPS, or forecasts as facts** without citing the source. If you can't cite, mark `(unverified)`.
+6. **Never close `position` issues.** Pinned dossiers, open indefinitely.
+7. **Never modify `README.md`** unless explicitly asked.
+8. **Never bypass the DSL.** Build a model and render with the supplied renderer rather than emitting hand-formatted markdown that mimics the schema.
 
 ## Useful commands
 
 ```bash
-# Regenerate dashboards locally (deterministic, no network)
-python scripts/render_dashboards.py
+# Re-render the sankey dashboard
+uv run python scripts/render_dashboards.py
+
+# Regenerate the Risks Index issue body
+uv run python scripts/render_risks_index.py
+
+# Validate every dossier + allocation
+uv run pytest -q
+
+# Run all DSL smoke tests
+uv run pytest tests/
 
 # List open weekly reviews
 gh issue list --label weekly-review --state open
@@ -81,4 +130,4 @@ gh issue list --label dca-tracker --state open
 
 ## Disclaimer
 
-Everything here is one investor's journal. Positions, weights, and notes reflect personal opinion as of the date written and may be wrong, stale, or revised without notice. Not financial advice.
+Personal journal. Positions, weights, and notes reflect personal opinion as of the date written and may be wrong, stale, or revised without notice. Not financial advice.

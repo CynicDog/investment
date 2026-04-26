@@ -2,12 +2,11 @@ name: Earnings watcher
 
 on:
   schedule:
-    # Daily 13:00 UTC, before US open
     - cron: "0 13 * * *"
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write   # may file risks (commit risks/*.yml)
   issues: write
   id-token: write
   actions: read
@@ -18,35 +17,53 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
         with:
-          python-version: "3.12"
+          enable-cache: true
 
-      - name: Install deps
-        run: pip install -r scripts/requirements.txt
+      - name: Install project
+        run: uv sync --frozen
 
       - name: Run Claude earnings watcher
         uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
             You are running the daily earnings watcher for ${{ github.repository }}.
-            Read the prompt definition under `## earnings-watcher` in `docs/PROMPTS.md` and follow it
-            verbatim. Inputs:
+            Read `docs/PROMPTS.md` (anchor `## earnings-watcher`) and follow it verbatim.
+            The DSL is codified under `src/investment_journal/` — schemas for
+            `EarningsEvent`, `EarningsRecap`, and `Risk` define the issue/recap shapes.
+
+            Inputs:
               - portfolio/allocation.yml (list of tickers)
-              - existing open earnings issues (gh issue list --label earnings --state open)
-            For each ticker:
-              1. Web-search the next confirmed earnings date (prefer the company's IR site or NASDAQ).
-              2. If date is within 7 days AND no open issue with title matching "Earnings: {TICKER} {Q}Q{YY}" exists,
-                 open one using the earnings-event template structure (label: earnings, auto-tick).
-              3. If an earnings date passed in the last 3 days and the issue body lacks the "### Recap" header,
-                 web-search the press release + transcript and post a recap comment with reported numbers,
-                 guidance change, and 1-3 quote-worthy lines. Then edit the issue body to tick:
-                 [x] Earnings released, [x] Recap published.
-            Be conservative: if you cannot confirm an earnings date from a primary source, skip that ticker.
+              - open earnings issues: gh issue list --label earnings --state open
+
+            If a recap reveals a material thesis-impacting concern, file a risk:
+              uv run python scripts/file_a_risk.py \
+                --title "..." --severity low|medium|high \
+                --surfaced-in "earnings/<TICKER>-<QQYY>" \
+                --ticker "<TICKER>" \
+                --description "..." --monitor-for "..."
+
+            Be conservative: skip a ticker if you cannot confirm dates / numbers from a primary source.
           claude_args: |
             --model claude-sonnet-4-6
-            --allowedTools "Read,Glob,Grep,Bash(gh issue *),Bash(gh api *),Bash(date:*),Bash(cat:*),WebSearch,WebFetch"
+            --allowedTools "Read,Glob,Grep,Write,Bash(uv run python:*),Bash(uv run:*),Bash(date:*),Bash(cat:*),Bash(gh issue list:*),Bash(gh issue view:*),Bash(gh issue create:*),Bash(gh issue comment:*),Bash(gh issue edit:*),Bash(gh api *),WebSearch,WebFetch"
+
+      - name: Commit new risk yamls if any
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [[ -z "$(git status --porcelain risks/)" ]]; then
+            echo "No new risk files to commit."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add risks/
+          git commit -m "chore(risks): file new risks from earnings watcher (run #${{ github.run_id }})"
+          git push

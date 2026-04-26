@@ -1,0 +1,42 @@
+name: Risks index sync
+
+# Re-renders the pinned "Risks Index" issue body whenever risks/*.yml changes.
+# Also creates the Risks Index issue (and pins it) on first run.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "risks/*.yml"
+      - "src/investment_journal/render/issue_body.py"
+      - "src/investment_journal/models/risk.py"
+      - "scripts/render_risks_index.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: risks-index-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install project
+        run: uv sync --frozen
+
+      - name: Render Risks Index
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: uv run python scripts/render_risks_index.py

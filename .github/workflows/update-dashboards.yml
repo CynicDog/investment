@@ -24,16 +24,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
         with:
-          python-version: "3.12"
+          enable-cache: true
 
-      - name: Install deps
-        run: pip install -r scripts/requirements.txt
+      - name: Install project
+        run: uv sync --frozen
 
       - name: Render
-        run: python scripts/render_dashboards.py
+        run: uv run python scripts/render_dashboards.py
 
       - name: Commit & push if changed
         run: |

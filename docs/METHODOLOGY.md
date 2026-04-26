@@ -1,84 +1,85 @@
 # Methodology
 
-How rundowns and dashboards are produced. If you change any of the math or the workflow shape, update this file.
+How the system is wired. If you change the math, the schemas, or the workflow shape, update this file.
 
 ## Source-of-truth files
 
-| File | Hand-edited? | Edited by automation? |
+| File / dir | Hand-edited? | Edited by automation? |
 |---|---|---|
+| `pyproject.toml`, `uv.lock` | Yes | Locked by CI |
+| `src/investment_journal/` | Yes (DSL evolution) | No |
 | `portfolio/allocation.yml` | Yes (rare, deliberate) | No |
-| `portfolio/positions/*.md` | Yes (thesis sections) | Yes (only `<!-- news-start --> / news-end` block by weekly review) |
-| `portfolio/dashboards/*.md` | **No** — fully regenerated | Yes (`render_dashboards.py`) |
+| `portfolio/positions/*.md` | Yes (thesis prose) | Yes (only the `<!-- news-start --> ... <!-- news-end -->` block, by weekly review) |
+| `portfolio/dashboards/dca-flow.md` | **No** — fully regenerated | `scripts/render_dashboards.py` |
+| `risks/R-*.yml` | **No** — file via `scripts/file_a_risk.py`; resolution = direct edit + push | `scripts/file_a_risk.py` (writes new); user edits status to `resolved` |
+| `risks/.index_body.md` | **No** | Transient; `scripts/render_risks_index.py` writes-then-deletes |
 | `README.md` | Yes | No |
 
-The user runs the actual daily DCA at **Toss**, which does not expose a trade-history API. The repo therefore tracks **intent** (target weights, daily DCA $ allocations as configured at Toss) and **confirmation** (weekly DCA tracker issues with `[ ]` checkboxes), not real broker fills. There is no trades.csv, no cost-basis tracking, no share-count math.
+## DSL contract
+
+`src/investment_journal/` is the single source of truth for the *shape* of every artifact the repo produces. Two halves:
+
+- `models/` — Pydantic models that validate inputs (yaml, dossier markdown).
+- `render/` — pure functions that turn validated models into markdown for issue bodies + dashboards.
+
+Workflows that author content (`weekly-review.yml`, `earnings-watcher.yml`, `dca-tracker.yml`, `thesis-review.yml`, `risks-index-sync.yml`, `update-dashboards.yml`) load the DSL via `uv sync --frozen` and either:
+- call a renderer directly (deterministic case — dashboards, risks index, dca-tracker), or
+- emit markdown that **must conform to the model's documented shape** (Claude case — weekly review, earnings recap). Doc anchors in `docs/PROMPTS.md` instruct Claude on the shape, but they don't yet validate Claude's output.
+
+`tests/test_models.py` smoke-tests every model and every renderer.
+
+## Risks lifecycle
+
+1. **Surface**: a weekly review or earnings watcher decides a concern is thesis-impacting.
+2. **File**: `scripts/file_a_risk.py` is invoked with `--title --severity --surfaced-in --description --monitor-for` (and optional `--ticker`). It:
+   - Picks the next free `R-YYYY-MM-NNN` id (current month, increment by file count).
+   - Validates a `Risk` model.
+   - Writes `risks/R-YYYY-MM-NNN-<slug>.yml`.
+   - `gh issue create --label risk` with body rendered by `render_risk_issue`.
+   - Back-fills `issue_number` into the yaml.
+3. **Track in the parent review**: the parent issue body's `## Risks` section lists `- [ ] #<issue_number> — <title>` per filed risk. When the child issue closes, the checkbox auto-renders as ticked in GitHub's UI.
+4. **Discuss**: ongoing discussion happens in the per-risk issue.
+5. **Resolve**: a human edits `risks/<id>.yml` to `status: resolved` + adds `resolved_on` + `resolution_note`, pushes. The push triggers `risks-index-sync.yml`, which:
+   - Re-renders the pinned Risks Index issue body (resolved risks move to the "Recently resolved" table).
+   - Closes the corresponding child issue.
+6. The yaml file is **never deleted**. Resolved entries stay in `risks/` for history; the Risks Index only displays the 10 most recently resolved.
 
 ## DCA confirmation tracking
 
-The `dca-tracker.yml` workflow runs every Sunday 22:00 UTC (~Monday 07:00 KST):
+`dca-tracker.yml` runs Sunday 22:00 UTC (~Mon 07 KST):
 
-1. Closes any still-open `dca-tracker` issue from prior weeks, posting a tally comment (`Auto-closing at end of week. Tally: N/M confirmed.`).
-2. Opens a fresh weekly issue titled `DCA tracker: week of YYYY-MM-DD` with five `[ ]` Mon–Fri bullets.
+1. Closes any still-open `dca-tracker` issue from prior weeks (with a tally comment `Auto-closing at end of week. Tally: N/M confirmed.`).
+2. Opens a fresh weekly issue titled `DCA tracker: week of YYYY-MM-DD` containing five Mon–Fri checkboxes (the body is built from `DCATracker.fresh(monday)` rendered via `render_dca_tracker`).
 
-The user ticks a bullet each weekday once Toss confirms the fill in the app. Closed issues become the journal — read by the weekly review to count fills.
+Closed weekly issues are the journal of what filled. The weekly review reads them to populate `WeeklyReview.dca`.
 
-A bullet is **never** ticked by automation. Even though `dca-tracker` issues are not labeled `auto-tick`, automation must explicitly exclude them. See CLAUDE.md.
+A bullet is **never** ticked by automation. The `issue-checkbox-tick.yml` workflow explicitly bails out for `dca-tracker`-labeled issues.
 
-## Dashboards (what the renderer produces)
+## Dashboards
 
-`scripts/render_dashboards.py` is dependency-free except for PyYAML, deterministic, and runs in <1 second. It reads `portfolio/allocation.yml` and writes a single file:
+`scripts/render_dashboards.py` reads `allocation.yml` via the DSL and writes `portfolio/dashboards/dca-flow.md` — a sankey-beta diagram grouped by sector (`Daily $X → sector → ticker`). That's the only file it writes.
 
-- **`dashboards/dca-flow.md`** — sankey-beta diagram grouped by sector: `Daily $X → sector → ticker`. Sectors are derived from `positions[].sector`, truncated at the first `/` for clean node labels.
-
-`dashboards/upcoming-earnings.md` is owned by `earnings-watcher.yml`, not the renderer. There is no allocation pie, no drift table, no market-value math. Allocation drift is observed visually at Toss.
+`portfolio/dashboards/upcoming-earnings.md` is owned by `earnings-watcher.yml`, not the renderer. There is no allocation pie, no drift table, no market-value math. Allocation drift is observed visually at Toss.
 
 ## Workflow contracts
 
-### `weekly-review.yml`
-- **Reads**: `allocation.yml`, all `positions/*.md`, recent closed `dca-tracker` issues.
-- **Writes**: a new GitHub issue labeled `weekly-review`, titled `Weekly review YYYY-Www`.
-- **Does not**: modify any tracked file.
-
-### `earnings-watcher.yml`
-- **Reads**: `allocation.yml`, open earnings issues.
-- **Writes**: opens earnings issues 7 days ahead; comments + edits issue body to tick `[x] Earnings released` / `[x] Recap published` after the call.
-- **Does not**: modify position files. Thesis-impact updates remain a human decision.
-
-### `update-dashboards.yml`
-- **Reads**: `allocation.yml`.
-- **Writes**: `dashboards/*.md`, the auto-block of `README.md`.
-- **No Claude involvement.** Pure deterministic renderer. Must remain so.
-
-### `dca-tracker.yml`
-- **Reads**: open `dca-tracker` issues.
-- **Writes**: closes prior week's tracker; opens a new tracker issue.
-- **No Claude involvement.**
-
-### `thesis-review.yml`
-- **Triggers**: 1st of each month, 22:00 UTC, plus `workflow_dispatch`.
-- **Reads**: `allocation.yml` (ticker list); existing `thesis-review` issues to dedupe.
-- **Writes**: opens one issue per ticker titled `Thesis review: {TICKER} {YYYY-MM}` for the just-completed month. Idempotent — re-running the same month is a no-op.
-- **No Claude involvement.**
-
-### `issue-checkbox-tick.yml`
-- **Triggers**: edits/comments on `auto-tick`-labeled issues only.
-- **Writes**: edits the issue body to flip `[ ] → [x]` for verifiable items only; posts one comment listing what was ticked and why.
-- **Hard exclusion**: `dca-tracker` issues never auto-tick (they should not carry the `auto-tick` label, but the workflow must defensively skip them by label even if mislabeled).
-
-### `claude-mention.yml`
-- **Triggers**: `@claude` in any issue or comment.
-- **Read-only by default** for the repo; only writes are GitHub issue/PR comments via `gh`.
-
-## Tone & disclaimers
-
-All public-facing artifacts (issue bodies, README, position files) are personal-journal artifacts. Not investment advice. The weekly review issue carries an explicit disclaimer footer.
+| Workflow | Trigger | Reads | Writes |
+|---|---|---|---|
+| `update-dashboards.yml` | push to `portfolio/**` or `scripts/render_dashboards.py` | `allocation.yml` | `dashboards/dca-flow.md`, commits if changed |
+| `dca-tracker.yml` | Sun 22 UTC + dispatch | open dca-tracker issues | closes prior, opens new tracker issue |
+| `thesis-review.yml` | 1st of month 22 UTC + dispatch | `allocation.yml`, existing thesis-review issues | one issue per ticker for the just-completed month (idempotent) |
+| `weekly-review.yml` | Fri 21:30 UTC + dispatch | full repo + open risk issues + closed dca-tracker issues + web | new weekly-review issue; new `risks/*.yml` files (committed by the workflow) |
+| `earnings-watcher.yml` | daily 13 UTC + dispatch | tickers + open earnings issues + open risk issues + web | earnings issues (open / comment / edit); optionally `risks/*.yml` |
+| `risks-index-sync.yml` | push to `risks/*.yml` + dispatch | all `risks/*.yml` | Risks Index issue body (creates+pins on first run) |
+| `claude-mention.yml` | `@claude` in issue/PR | as Claude reads | issue/PR comments |
+| `issue-checkbox-tick.yml` | edit/comment on `auto-tick`-labeled issue | issue body | flipped `[ ] → [x]`, one summary comment; never on `dca-tracker` |
 
 ## What we explicitly do not do
 
 - Cost-basis tracking, share-count tracking, real P&L. Toss is the source of truth for actual holdings; we don't try to mirror it.
-- Live price feeds, market-value drift dashboards.
+- Live price feeds, market-value drift, P&L curves.
 - Tax lot accounting (FIFO/LIFO/specific ID).
-- Currency conversion between KRW (Toss) and USD (US listings).
+- Currency conversion (KRW ↔ USD).
 - Broker-side automation (placing orders).
 
-If Toss exposes an API in the future, layering cost-basis tracking on top is straightforward: add a `trades.csv`, restore the cost-basis math in `render_dashboards.py`, add an actual-allocation pie. The current design intentionally leaves that hook open.
+If Toss exposes an API in the future, layering cost-basis tracking on top is straightforward: add a `Trade` model + a `trades.yml` (or csv), restore drift math, regenerate the dashboard. The DSL / split between deterministic renderers and Claude-narrated commentary stays.

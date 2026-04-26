@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write   # need to commit new risks/*.yml files
   issues: write
   id-token: write
   actions: read
@@ -18,16 +18,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
         with:
-          python-version: "3.12"
+          enable-cache: true
 
-      - name: Install deps
-        run: pip install -r scripts/requirements.txt
+      - name: Install project
+        run: uv sync --frozen
 
       - name: Refresh dashboards (read-only step — no commit here)
-        run: python scripts/render_dashboards.py
+        run: uv run python scripts/render_dashboards.py
 
       - name: Compute ISO week tag
         id: week
@@ -37,23 +37,54 @@ jobs:
         uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
           WEEK_TAG: ${{ steps.week.outputs.tag }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
             You are running the weekly portfolio review for ${{ github.repository }}.
-            Read the prompt definition under `## weekly-review` in `docs/PROMPTS.md` and follow it
-            verbatim. Inputs you must read:
+            Read `docs/PROMPTS.md` (anchor `## weekly-review`) and follow it verbatim.
+            The DSL contract is documented in `CLAUDE.md` and codified under
+            `src/investment_journal/`.
+
+            Inputs to read:
               - portfolio/allocation.yml
-              - portfolio/trades.csv
-              - portfolio/dashboards/dca-flow.md
               - portfolio/positions/*.md
-            When the report is complete, open a NEW GitHub issue with:
-              - title: "Weekly review ${WEEK_TAG}"
-              - label: weekly-review
-              - body: the full report (markdown)
-            Use `gh issue create --title "Weekly review ${WEEK_TAG}" --label weekly-review --body-file <file>`.
-            Do not modify any files in this run except the in-flight scratch file you create for the body.
+              - portfolio/dashboards/dca-flow.md
+              - closed dca-tracker issues (last 4 weeks) via:
+                  gh issue list --label dca-tracker --state closed --limit 6 --json number,title,body,closedAt
+
+            For each NEW risk you surface, call:
+              uv run python scripts/file_a_risk.py \
+                --title "..." --severity low|medium|high \
+                --surfaced-in "weekly-review/${WEEK_TAG}" \
+                --ticker "TICKER_OR_OMIT" \
+                --description "..." --monitor-for "..."
+            It writes risks/<id>-<slug>.yml + opens a child issue and prints
+              {"id":"R-...","issue_number":N,"path":"...","url":"..."}
+            Reference those IDs in the weekly-review issue body's Risks section.
+
+            Compose the weekly-review body following the shape in PROMPTS.md.
+            Open it with:
+              gh issue create --title "Weekly review ${WEEK_TAG}" --label weekly-review --body-file <file>
+
+            Do NOT modify position dossiers, allocation.yml, or any auto-rendered
+            dashboard files. Only new risks/*.yml are allowed; the workflow
+            commits those after you finish.
           claude_args: |
             --model claude-sonnet-4-6
-            --allowedTools "Read,Glob,Grep,Write,Bash(python:*),Bash(date:*),Bash(gh issue create:*),Bash(cat:*),WebSearch,WebFetch"
+            --allowedTools "Read,Glob,Grep,Write,Bash(uv run python:*),Bash(uv run:*),Bash(date:*),Bash(cat:*),Bash(gh issue list:*),Bash(gh issue view:*),Bash(gh issue create:*),Bash(gh issue comment:*),Bash(gh issue edit:*),WebSearch,WebFetch"
+
+      - name: Commit new risk yamls if any
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [[ -z "$(git status --porcelain risks/)" ]]; then
+            echo "No new risk files to commit."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add risks/
+          git commit -m "chore(risks): file new risks from weekly review (run #${{ github.run_id }})"
+          git push
