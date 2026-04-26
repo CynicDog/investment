@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""File a new Risk: validate via DSL, write `risks/<id>-<slug>.yml`, open a GitHub
-discussion issue (label=risk), back-fill the issue number into the yaml, print
-the result as JSON.
+"""File a new Risk: validate via DSL, write `risks/<id>.md` (frontmatter + body),
+open a GitHub discussion issue (label=risk), back-fill the issue number into
+the file, print the result as JSON.
 
 Used by Claude workflows (weekly-review, earnings-watcher) and by humans.
 
@@ -15,7 +15,7 @@ Usage:
         --monitor-for "..."
 
 Stdout (JSON, one line):
-    {"id": "R-2026-04-001", "issue_number": 23, "path": "risks/R-2026-04-001-...-.yml"}
+    {"id": "R-2026-04-001", "issue_number": 23, "path": "risks/R-2026-04-001.md"}
 """
 
 from __future__ import annotations
@@ -37,20 +37,12 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 RISKS_DIR = REPO_ROOT / "risks"
 
 
-def slugify(s: str, max_len: int = 40) -> str:
-    s = s.strip().lower()
-    s = re.sub(r"[^a-z0-9\s-]", "", s)
-    s = re.sub(r"\s+", "-", s)
-    s = re.sub(r"-+", "-", s).strip("-")
-    return s[:max_len].rstrip("-")
-
-
 def next_id(today: date) -> str:
     prefix = f"R-{today.strftime('%Y-%m')}"
     existing_nums: list[int] = []
     if RISKS_DIR.exists():
-        for p in RISKS_DIR.glob(f"{prefix}-*.yml"):
-            m = re.match(rf"^{re.escape(prefix)}-(\d{{3}})", p.stem)
+        for p in RISKS_DIR.glob(f"{prefix}-*.md"):
+            m = re.match(rf"^{re.escape(prefix)}-(\d{{3}})$", p.stem)
             if m:
                 existing_nums.append(int(m.group(1)))
     n = max(existing_nums, default=0) + 1
@@ -89,8 +81,7 @@ def main() -> int:
     RISKS_DIR.mkdir(parents=True, exist_ok=True)
     today = date.today()
     rid = next_id(today)
-    slug = slugify(args.title)
-    path = RISKS_DIR / f"{rid}-{slug}.yml"
+    path = RISKS_DIR / f"{rid}.md"
 
     risk = Risk(
         id=rid,
@@ -102,7 +93,7 @@ def main() -> int:
         description=args.description,
         monitor_for=args.monitor_for,
     )
-    path.write_text(risk.to_yaml())
+    path.write_text(risk.to_markdown())
 
     body_path = path.with_suffix(".body.tmp")
     body_path.write_text(render_risk_issue(risk))
@@ -117,7 +108,7 @@ def main() -> int:
     issue_n = int(issue_url.rsplit("/", 1)[-1]) if "/" in issue_url else 0
 
     risk_with_issue = risk.model_copy(update={"issue_number": issue_n})
-    path.write_text(risk_with_issue.to_yaml())
+    path.write_text(risk_with_issue.to_markdown())
 
     print(json.dumps(
         {"id": rid, "issue_number": issue_n, "path": str(path.relative_to(REPO_ROOT)), "url": issue_url}

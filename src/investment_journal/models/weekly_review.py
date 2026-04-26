@@ -52,7 +52,7 @@ class WeeklyReview(BaseModel):
     catalysts_30d: list[Catalyst] = Field(default_factory=list)
     risks_surfaced: list[str] = Field(
         default_factory=list,
-        description="Risk IDs created in this review (each gets a child issue + risks/<id>.yml file).",
+        description="Risk IDs created in this review (each gets a child issue + risks/<id>.md file).",
     )
     risks_resolved: list[str] = Field(
         default_factory=list,

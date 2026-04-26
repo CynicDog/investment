@@ -11,7 +11,7 @@ How the system is wired. If you change the math, the schemas, or the workflow sh
 | `portfolio/allocation.yml` | Yes (rare, deliberate) | No |
 | `portfolio/positions/*.md` | Yes (thesis prose) | Yes (only the `<!-- news-start --> ... <!-- news-end -->` block, by weekly review) |
 | `portfolio/dashboards/dca-flow.md` | **No** — fully regenerated | `scripts/render_dashboards.py` |
-| `risks/R-*.yml` | **No** — file via `scripts/file_a_risk.py`; resolution = direct edit + push | `scripts/file_a_risk.py` (writes new); user edits status to `resolved` |
+| `risks/R-*.md` | **No** — file via `scripts/file_a_risk.py`; resolution = direct edit + push | `scripts/file_a_risk.py` (writes new); user edits status to `resolved` |
 | `risks/.index_body.md` | **No** | Transient; `scripts/render_risks_index.py` writes-then-deletes |
 | `README.md` | Yes | No |
 
@@ -34,15 +34,15 @@ Workflows that author content (`weekly-review.yml`, `earnings-watcher.yml`, `dca
 2. **File**: `scripts/file_a_risk.py` is invoked with `--title --severity --surfaced-in --description --monitor-for` (and optional `--ticker`). It:
    - Picks the next free `R-YYYY-MM-NNN` id (current month, increment by file count).
    - Validates a `Risk` model.
-   - Writes `risks/R-YYYY-MM-NNN-<slug>.yml`.
+   - Writes `risks/R-YYYY-MM-NNN.md`.
    - `gh issue create --label risk` with body rendered by `render_risk_issue`.
-   - Back-fills `issue_number` into the yaml.
+   - Back-fills `issue_number` into the file's frontmatter.
 3. **Track in the parent review**: the parent issue body's `## Risks` section lists `- [ ] #<issue_number> — <title>` per filed risk. When the child issue closes, the checkbox auto-renders as ticked in GitHub's UI.
 4. **Discuss**: ongoing discussion happens in the per-risk issue.
-5. **Resolve**: a human edits `risks/<id>.yml` to `status: resolved` + adds `resolved_on` + `resolution_note`, pushes. The push triggers `risks-index-sync.yml`, which:
+5. **Resolve**: a human edits `risks/<id>.md` to `status: resolved` + adds `resolved_on` + `resolution_note`, pushes. The push triggers `risks-index-sync.yml`, which:
    - Re-renders the pinned Risks Index issue body (resolved risks move to the "Recently resolved" table).
    - Closes the corresponding child issue.
-6. The yaml file is **never deleted**. Resolved entries stay in `risks/` for history; the Risks Index only displays the 10 most recently resolved.
+6. The markdown file is **never deleted**. Resolved entries stay in `risks/` for history; the Risks Index only displays the 10 most recently resolved.
 
 ## DCA confirmation tracking
 
@@ -68,9 +68,9 @@ A bullet is **never** ticked by automation. The `issue-checkbox-tick.yml` workfl
 | `update-dashboards.yml` | push to `portfolio/**` or `scripts/render_dashboards.py` | `allocation.yml` | `dashboards/dca-flow.md`, commits if changed |
 | `dca-tracker.yml` | Sun 22 UTC + dispatch | open dca-tracker issues | closes prior, opens new tracker issue |
 | `thesis-review.yml` | 1st of month 22 UTC + dispatch | `allocation.yml`, existing thesis-review issues | one issue per ticker for the just-completed month (idempotent) |
-| `weekly-review.yml` | Fri 21:30 UTC + dispatch | full repo + open risk issues + closed dca-tracker issues + web | new weekly-review issue; new `risks/*.yml` files (committed by the workflow) |
-| `earnings-watcher.yml` | daily 13 UTC + dispatch | tickers + open earnings issues + open risk issues + web | earnings issues (open / comment / edit); optionally `risks/*.yml` |
-| `risks-index-sync.yml` | push to `risks/*.yml` + dispatch | all `risks/*.yml` | Risks Index issue body (creates+pins on first run) |
+| `weekly-review.yml` | Fri 21:30 UTC + dispatch | full repo + open risk issues + closed dca-tracker issues + web | new weekly-review issue; new `risks/R-*.md` files (committed by the workflow) |
+| `earnings-watcher.yml` | daily 13 UTC + dispatch | tickers + open earnings issues + open risk issues + web | earnings issues (open / comment / edit); optionally `risks/R-*.md` |
+| `risks-index-sync.yml` | push to `risks/R-*.md` + dispatch | all `risks/R-*.md` | Risks Index issue body (creates+pins on first run) |
 | `claude-mention.yml` | `@claude` in issue/PR | as Claude reads | issue/PR comments |
 | `issue-checkbox-tick.yml` | edit/comment on `auto-tick`-labeled issue | issue body | flipped `[ ] → [x]`, one summary comment; never on `dca-tracker` |
 

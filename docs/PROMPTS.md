@@ -45,9 +45,9 @@ uv run python scripts/file_a_risk.py \
   --monitor-for "<concrete signals that would resolve this>"
 ```
 
-The script writes `risks/<id>-<slug>.yml`, opens a child issue (label `risk`), and prints one JSON line:
+The script writes `risks/<id>.md`, opens a child issue (label `risk`), and prints one JSON line:
 ```json
-{"id":"R-2026-04-001","issue_number":23,"path":"risks/R-2026-04-001-...yml","url":"https://..."}
+{"id":"R-2026-04-001","issue_number":23,"path":"risks/R-2026-04-001.md","url":"https://..."}
 ```
 
 Capture the `id` and `issue_number` for the next step. Do NOT file a risk that duplicates an already-open one — check the open-risk list first.
@@ -114,7 +114,7 @@ _Personal journal. Not financial advice._
 ### Constraints
 
 - Do NOT modify position dossiers, `allocation.yml`, or any auto-rendered dashboard.
-- New `risks/*.yml` files are the only repo writes you should produce. The workflow commits them after you finish.
+- New `risks/R-*.md` files are the only repo writes you should produce. The workflow commits them after you finish.
 - If you cannot find a primary source for a number, mark it `(unverified)`.
 - If you cannot confirm a risk is real, do not file it. Conservative beats noisy.
 

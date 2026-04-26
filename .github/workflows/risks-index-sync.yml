@@ -1,13 +1,13 @@
 name: Risks index sync
 
-# Re-renders the pinned "Risks Index" issue body whenever risks/*.yml changes.
+# Re-renders the pinned "Risks Index" issue body whenever risks/R-*.md changes.
 # Also creates the Risks Index issue (and pins it) on first run.
 
 on:
   push:
     branches: [main]
     paths:
-      - "risks/*.yml"
+      - "risks/R-*.md"
       - "src/investment_journal/render/issue_body.py"
       - "src/investment_journal/models/risk.py"
       - "scripts/render_risks_index.py"

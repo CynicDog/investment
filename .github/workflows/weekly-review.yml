@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write   # need to commit new risks/*.yml files
+  contents: write   # need to commit new risks/R-*.md files
   issues: write
   id-token: write
   actions: read
@@ -60,7 +60,7 @@ jobs:
                 --surfaced-in "weekly-review/${WEEK_TAG}" \
                 --ticker "TICKER_OR_OMIT" \
                 --description "..." --monitor-for "..."
-            It writes risks/<id>-<slug>.yml + opens a child issue and prints
+            It writes risks/<id>.md + opens a child issue and prints
               {"id":"R-...","issue_number":N,"path":"...","url":"..."}
             Reference those IDs in the weekly-review issue body's Risks section.
 
@@ -69,13 +69,13 @@ jobs:
               gh issue create --title "Weekly review ${WEEK_TAG}" --label weekly-review --body-file <file>
 
             Do NOT modify position dossiers, allocation.yml, or any auto-rendered
-            dashboard files. Only new risks/*.yml are allowed; the workflow
+            dashboard files. Only new risks/R-*.md are allowed; the workflow
             commits those after you finish.
           claude_args: |
             --model claude-sonnet-4-6
             --allowedTools "Read,Glob,Grep,Write,Bash(uv run python:*),Bash(uv run:*),Bash(date:*),Bash(cat:*),Bash(gh issue list:*),Bash(gh issue view:*),Bash(gh issue create:*),Bash(gh issue comment:*),Bash(gh issue edit:*),WebSearch,WebFetch"
 
-      - name: Commit new risk yamls if any
+      - name: Commit new risk files if any
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

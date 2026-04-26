@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Re-render the body of the pinned "Risks Index" GitHub issue from `risks/*.yml`.
+Re-render the body of the pinned "Risks Index" GitHub issue from `risks/R-*.md`.
 
 If the Risks Index issue does not exist yet, it is created (and pinned).
 Otherwise its body is replaced with the freshly rendered markdown.
