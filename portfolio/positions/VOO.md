@@ -1,0 +1,77 @@
+# VOO — Vanguard S&P 500 ETF
+
+> Last reviewed: 2026-04-26 &nbsp;•&nbsp; Sector: Index &nbsp;•&nbsp; Target: 32% &nbsp;•&nbsp; Daily DCA: $32
+
+## At a glance
+
+| Metric | Value |
+|---|---|
+| Target allocation | 32% |
+| Cost-basis allocation | _populated by `render_dashboards.py`_ |
+| Drift (pp) | _populated_ |
+| Shares held | _populated_ |
+| Avg cost basis | _populated_ |
+| Total cost basis | _populated_ |
+| Daily DCA | $32 |
+
+## Thesis
+
+The portfolio anchor. Owns the 500 largest US companies at low cost (expense ratio ~0.03%). Mechanical exposure to US large-cap earnings growth and the long-run equity risk premium. Sized at 32% — the largest single position — to absorb the diversification work the concentrated single-name sleeve does not do. Held indefinitely.
+
+## Bull case
+
+- Lowest-friction way to own US large-cap earnings.
+- Rebalances itself; no manager risk.
+- Consistent inflows from passive flows + 401(k) demand.
+
+## Bear case & risks
+
+- Concentration in a handful of mega-caps (Mag 7) means index P/E is sensitive to a few names.
+- US-only — no developed ex-US, no EM. Currency / regime risk is implicit.
+- No floor in a regime shift away from US equity dominance.
+
+## Catalysts (next 12 months)
+
+- [ ] Annual reconstitution effects — n/a (passive)
+- [ ] Major Fed pivot — monitor
+
+## Valuation snapshot
+
+_Last refreshed: 2026-04-26 (placeholder — weekly review will fill)_
+
+| Metric | This ETF | Reference |
+|---|---|---|
+| Index P/E (TTM) | — | vs. 10y avg |
+| Index P/E (forward) | — | — |
+| Earnings yield | — | vs. 10y Treasury |
+| Notes | — | — |
+
+## Capital return
+
+- **Distribution**: quarterly, primarily dividends + small qualified component.
+- **Buybacks (underlying)**: aggregate S&P 500 buyback yield ~1.5–2% historically.
+
+## Recent earnings (last 4 quarters)
+
+_Aggregate S&P 500 earnings — populated by weekly review._
+
+## Trades log
+
+<!-- trades-start -->
+_No trades logged yet for this ticker._
+<!-- trades-end -->
+
+## News & notes
+
+<!-- news-start -->
+_Weekly review action appends dated bullets here. Most recent first._
+<!-- news-end -->
+
+## Re-check schedule
+
+- Quarterly thesis review issue: _link once opened_
+- Index events: Fed meetings, CPI prints, payrolls
+
+---
+
+_Personal journal entry. Not financial advice._

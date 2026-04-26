@@ -1,0 +1,43 @@
+name: Issue checkbox auto-tick
+
+on:
+  issues:
+    types: [edited, labeled]
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  tick:
+    if: |
+      contains(toJSON(github.event.issue.labels.*.name), 'auto-tick') &&
+      !contains(github.event.sender.login, '[bot]')
+    runs-on: ubuntu-latest
+    concurrency:
+      group: tick-${{ github.event.issue.number }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Claude checkbox tick
+        uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            You are auto-ticking checkboxes on issue #${ISSUE_NUMBER} in ${{ github.repository }}.
+            Read the prompt definition under `## issue-checkbox-tick` in `docs/PROMPTS.md` and follow
+            it verbatim. Be conservative — only tick `[ ] -> [x]` for items you can VERIFY from:
+              - the issue body and comments
+              - repository state (read with cat / gh api)
+              - the open public web (last resort, must cite)
+            Never tick anything subjective ("Thesis-impact assessed"). After updating, post ONE comment
+            listing what you ticked and the citation. If nothing is verifiable, post nothing.
+          claude_args: |
+            --model claude-sonnet-4-6
+            --allowedTools "Read,Glob,Grep,Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh api *),Bash(cat:*),WebSearch,WebFetch"

@@ -1,0 +1,55 @@
+plan_version: 2
+adopted: 2026-04-26
+notes: |
+  Revised allocation. No cash sleeve — fully invested. MKL added at 12% as a defensive
+  insurance + holding-company sleeve (insurance float compounded via equities + Ventures).
+  Relative ordering and conviction structure unchanged from plan_version 1: VOO is the
+  anchor, HLNE/HALO/ETN are the next tier (now tied at 16%), MKL slots in for ballast,
+  IDCC remains the smallest single-name. VOO absorbed the bulk of the 5pp cash redistribution.
+
+dca:
+  cadence: daily-weekday      # 5 fills per week
+  total_per_day_usd: 100
+
+positions:
+  - ticker: VOO
+    name: Vanguard S&P 500 ETF
+    sector: Index
+    target_pct: 32
+    dca_per_day_usd: 32
+    role: Broad market anchor
+
+  - ticker: HLNE
+    name: Hamilton Lane
+    sector: Financials / Asset management
+    target_pct: 16
+    dca_per_day_usd: 16
+    role: Private markets growth
+
+  - ticker: HALO
+    name: Halozyme Therapeutics
+    sector: Healthcare / Biotech
+    target_pct: 16
+    dca_per_day_usd: 16
+    role: Healthcare royalties
+
+  - ticker: ETN
+    name: Eaton Corp
+    sector: Industrials / Electrical
+    target_pct: 16
+    dca_per_day_usd: 16
+    role: AI power infrastructure
+
+  - ticker: MKL
+    name: Markel Group
+    sector: Insurance / Holding company
+    target_pct: 12
+    dca_per_day_usd: 12
+    role: Defensive insurance + holding co
+
+  - ticker: IDCC
+    name: InterDigital
+    sector: Technology / IP licensing
+    target_pct: 8
+    dca_per_day_usd: 8
+    role: Patent licensing IP

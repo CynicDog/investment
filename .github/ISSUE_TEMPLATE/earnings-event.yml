@@ -1,0 +1,69 @@
+name: Earnings event
+description: One per quarter per ticker. Auto-opened by earnings-watcher; can also be opened manually.
+title: "Earnings: {TICKER} {Q}Q{YY}"
+labels: ["earnings", "auto-tick"]
+body:
+  - type: input
+    id: ticker
+    attributes:
+      label: Ticker
+      placeholder: HALO
+    validations:
+      required: true
+
+  - type: input
+    id: quarter
+    attributes:
+      label: Quarter
+      placeholder: 1Q26
+    validations:
+      required: true
+
+  - type: input
+    id: date
+    attributes:
+      label: Expected earnings date (YYYY-MM-DD)
+      placeholder: "2026-05-06"
+    validations:
+      required: true
+
+  - type: input
+    id: time
+    attributes:
+      label: Pre-market / post-close
+      placeholder: "post-close"
+
+  - type: textarea
+    id: prep
+    attributes:
+      label: Prep notes
+      description: What to listen for. Key metrics, prior-quarter guidance, peer-read.
+      value: |
+        - Watch:
+          - …
+        - Prior-quarter guidance vs. consensus:
+          - …
+
+  - type: textarea
+    id: checklist
+    attributes:
+      label: Tracking checklist
+      value: |
+        - [ ] Prep notes written
+        - [ ] Earnings released
+        - [ ] Recap published in this issue
+        - [ ] Thesis-impact assessed (bull/bear case revisions, if any)
+        - [ ] `portfolio/positions/{TICKER}.md` updated
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        **Recap section** (filled by bot or by hand after the call):
+
+        ### Recap
+
+        - **Reported**: revenue …, EPS …, key segments …
+        - **Guidance change**: …
+        - **Call quotes worth keeping**: …
+        - **Thesis impact**: bull case unchanged / bear risk realized / new variable: …

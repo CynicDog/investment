@@ -1,0 +1,58 @@
+name: Quarterly thesis review
+description: Quarterly re-check of a position's thesis. Does it still hold?
+title: "Thesis review: {TICKER} {Q}Q{YY}"
+labels: ["thesis-review"]
+body:
+  - type: input
+    id: ticker
+    attributes:
+      label: Ticker
+    validations:
+      required: true
+
+  - type: input
+    id: quarter
+    attributes:
+      label: Quarter being reviewed
+      placeholder: "1Q26"
+    validations:
+      required: true
+
+  - type: textarea
+    id: still-holds
+    attributes:
+      label: Does the thesis still hold?
+      description: Yes / partially / no — and the one-sentence why.
+    validations:
+      required: true
+
+  - type: textarea
+    id: bull-changes
+    attributes:
+      label: What changed in the bull case?
+    validations:
+      required: false
+
+  - type: textarea
+    id: bear-changes
+    attributes:
+      label: What changed in the bear case / risks?
+    validations:
+      required: false
+
+  - type: textarea
+    id: action
+    attributes:
+      label: Action taken or planned
+      placeholder: e.g. trim 2pp into cash; raise target by 2pp; no change
+    validations:
+      required: true
+
+  - type: textarea
+    id: checklist
+    attributes:
+      label: Checklist
+      value: |
+        - [ ] Position file thesis section updated
+        - [ ] `allocation.yml` updated (if weights changed)
+        - [ ] Trade(s) logged via trade-log template (if any)

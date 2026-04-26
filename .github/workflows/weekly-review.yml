@@ -1,0 +1,57 @@
+name: Weekly review
+
+on:
+  schedule:
+    # Friday 21:30 UTC (~16:30 ET, post US-close)
+    - cron: "30 21 * * 5"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install deps
+        run: pip install -r scripts/requirements.txt
+
+      - name: Refresh dashboards (read-only step — no commit here)
+        run: python scripts/render_dashboards.py
+
+      - name: Compute ISO week tag
+        id: week
+        run: echo "tag=$(date -u +'%G-W%V')" >> "$GITHUB_OUTPUT"
+
+      - name: Run Claude weekly review
+        uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WEEK_TAG: ${{ steps.week.outputs.tag }}
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            You are running the weekly portfolio review for ${{ github.repository }}.
+            Read the prompt definition under `## weekly-review` in `docs/PROMPTS.md` and follow it
+            verbatim. Inputs you must read:
+              - portfolio/allocation.yml
+              - portfolio/trades.csv
+              - portfolio/dashboards/allocation.md
+              - portfolio/positions/*.md
+            When the report is complete, open a NEW GitHub issue with:
+              - title: "Weekly review ${WEEK_TAG}"
+              - label: weekly-review
+              - body: the full report (markdown)
+            Use `gh issue create --title "Weekly review ${WEEK_TAG}" --label weekly-review --body-file <file>`.
+            Do not modify any files in this run except the in-flight scratch file you create for the body.
+          claude_args: |
+            --model claude-sonnet-4-6
+            --allowedTools "Read,Glob,Grep,Write,Bash(python:*),Bash(date:*),Bash(gh issue create:*),Bash(cat:*),WebSearch,WebFetch"

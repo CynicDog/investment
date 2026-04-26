@@ -1,0 +1,67 @@
+name: Stock position dossier
+description: Pinned per-ticker dossier (one per holding). Manually opened, rarely closed.
+title: "Position: {TICKER} — {Company Name}"
+labels: ["position"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Open one of these per holding and pin it. The body mirrors `portfolio/positions/_template.md`.
+        The dossier in the repo is the canonical version — this issue is the discussion thread.
+
+  - type: input
+    id: ticker
+    attributes:
+      label: Ticker
+      placeholder: HALO
+    validations:
+      required: true
+
+  - type: input
+    id: name
+    attributes:
+      label: Company name
+      placeholder: Halozyme Therapeutics
+    validations:
+      required: true
+
+  - type: input
+    id: target
+    attributes:
+      label: Target allocation %
+      placeholder: "17"
+    validations:
+      required: true
+
+  - type: textarea
+    id: thesis
+    attributes:
+      label: Thesis
+      description: 3–5 sentences. Why this is in the portfolio at this weight.
+    validations:
+      required: true
+
+  - type: textarea
+    id: bull
+    attributes:
+      label: Bull case (bullets)
+    validations:
+      required: false
+
+  - type: textarea
+    id: bear
+    attributes:
+      label: Bear case & risks (bullets)
+    validations:
+      required: false
+
+  - type: textarea
+    id: catalysts
+    attributes:
+      label: Catalysts (next 12 months)
+      description: Use markdown checkboxes; the bot will tick verifiable ones over time.
+      placeholder: |
+        - [ ] Q2 earnings — late July
+        - [ ] Investor day — fall
+    validations:
+      required: false
