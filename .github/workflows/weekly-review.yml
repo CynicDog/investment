@@ -89,3 +89,10 @@ jobs:
           git add risks/
           git commit -m "chore(risks): file new risks from weekly review (run #${{ github.run_id }})"
           git push
+
+      - name: Refresh Risks Index issue
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: uv run python scripts/render_risks_index.py
