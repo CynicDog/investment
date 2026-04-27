@@ -1,0 +1,78 @@
+{
+  "fills": [
+    {
+      "on_date": "2026-04-27",
+      "ticker": "VOO",
+      "executed": false,
+      "target_usd": 32.0,
+      "price_usd": null,
+      "shares": null
+    },
+    {
+      "on_date": "2026-04-27",
+      "ticker": "HLNE",
+      "executed": false,
+      "target_usd": 16.0,
+      "price_usd": null,
+      "shares": null
+    },
+    {
+      "on_date": "2026-04-27",
+      "ticker": "HALO",
+      "executed": false,
+      "target_usd": 16.0,
+      "price_usd": null,
+      "shares": null
+    },
+    {
+      "on_date": "2026-04-27",
+      "ticker": "ETN",
+      "executed": false,
+      "target_usd": 16.0,
+      "price_usd": null,
+      "shares": null
+    },
+    {
+      "on_date": "2026-04-27",
+      "ticker": "MKL",
+      "executed": false,
+      "target_usd": 12.0,
+      "price_usd": null,
+      "shares": null
+    },
+    {
+      "on_date": "2026-04-27",
+      "ticker": "IDCC",
+      "executed": false,
+      "target_usd": 8.0,
+      "price_usd": null,
+      "shares": null
+    }
+  ],
+  "marks": {
+    "ETN": {
+      "price_usd": 423.92,
+      "as_of": "2026-04-24"
+    },
+    "HALO": {
+      "price_usd": 65.36,
+      "as_of": "2026-04-24"
+    },
+    "HLNE": {
+      "price_usd": 94.84,
+      "as_of": "2026-04-24"
+    },
+    "IDCC": {
+      "price_usd": 368.5,
+      "as_of": "2026-04-24"
+    },
+    "MKL": {
+      "price_usd": 1912.45,
+      "as_of": "2026-04-24"
+    },
+    "VOO": {
+      "price_usd": 656.42,
+      "as_of": "2026-04-24"
+    }
+  }
+}
