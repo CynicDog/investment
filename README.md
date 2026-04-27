@@ -49,6 +49,7 @@ uv run python scripts/render_dashboards.py    # regenerate the sankey
 - [ETN — Eaton Corp](portfolio/positions/ETN.md)
 - [MKL — Markel Group](portfolio/positions/MKL.md)
 - [IDCC — InterDigital](portfolio/positions/IDCC.md)
+- [P — Everpure](portfolio/positions/P.md)
 
 ## Risks
 
