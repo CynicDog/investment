@@ -9,16 +9,17 @@ config:
     showValues: true
 ---
 sankey-beta
-Daily $100,Index,32
-Daily $100,Financials,16
-Daily $100,Healthcare,16
-Daily $100,Industrials,16
-Daily $100,Insurance,12
-Daily $100,Technology,8
-Index,VOO,32
-Financials,HLNE,16
-Healthcare,HALO,16
-Industrials,ETN,16
-Insurance,MKL,12
+Daily $100,Index,29
+Daily $100,Financials,15
+Daily $100,Healthcare,15
+Daily $100,Industrials,14
+Daily $100,Insurance,11
+Daily $100,Technology,16
+Index,VOO,29
+Financials,HLNE,15
+Healthcare,HALO,15
+Industrials,ETN,14
+Insurance,MKL,11
 Technology,IDCC,8
+Technology,P,8
 ```

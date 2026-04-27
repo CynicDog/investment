@@ -1,11 +1,10 @@
-plan_version: 2
-adopted: 2026-04-26
+plan_version: 3
+adopted: 2026-04-27
 notes: |
-  Revised allocation. No cash sleeve — fully invested. MKL added at 12% as a defensive
-  insurance + holding-company sleeve (insurance float compounded via equities + Ventures).
-  Relative ordering and conviction structure unchanged from plan_version 1: VOO is the
-  anchor, HLNE/HALO/ETN are the next tier (now tied at 16%), MKL slots in for ballast,
-  IDCC remains the smallest single-name. VOO absorbed the bulk of the 5pp cash redistribution.
+  Revised 7-position allocation. P (Everpure, fka Pure Storage — ticker changed to P
+  after rebrand) added as a speculative AI data infrastructure play. SDGR (Schrödinger)
+  considered but dropped; its 7% redistributed evenly (+1pp each). HLNE and HALO remain
+  highest conviction. VOO stays the anchor at 29%. MKL retained as defensive ballast.
 
 dca:
   cadence: daily-weekday      # 5 fills per week
@@ -15,37 +14,37 @@ positions:
   - ticker: VOO
     name: Vanguard S&P 500 ETF
     sector: Index
-    target_pct: 32
-    dca_per_day_usd: 32
+    target_pct: 29
+    dca_per_day_usd: 29
     role: Broad market anchor
 
   - ticker: HLNE
     name: Hamilton Lane
     sector: Financials / Asset management
-    target_pct: 16
-    dca_per_day_usd: 16
-    role: Private markets growth
+    target_pct: 15
+    dca_per_day_usd: 15
+    role: Private markets growth (highest conviction)
 
   - ticker: HALO
     name: Halozyme Therapeutics
     sector: Healthcare / Biotech
-    target_pct: 16
-    dca_per_day_usd: 16
-    role: Healthcare royalties
+    target_pct: 15
+    dca_per_day_usd: 15
+    role: Healthcare royalties (highest conviction)
 
   - ticker: ETN
     name: Eaton Corp
     sector: Industrials / Electrical
-    target_pct: 16
-    dca_per_day_usd: 16
+    target_pct: 14
+    dca_per_day_usd: 14
     role: AI power infrastructure
 
   - ticker: MKL
     name: Markel Group
     sector: Insurance / Holding company
-    target_pct: 12
-    dca_per_day_usd: 12
-    role: Defensive insurance + holding co
+    target_pct: 11
+    dca_per_day_usd: 11
+    role: Defensive ballast
 
   - ticker: IDCC
     name: InterDigital
@@ -53,3 +52,10 @@ positions:
     target_pct: 8
     dca_per_day_usd: 8
     role: Patent licensing IP
+
+  - ticker: P
+    name: Everpure
+    sector: Technology / Data infrastructure
+    target_pct: 8
+    dca_per_day_usd: 8
+    role: "Speculation: AI data infra pivot"
