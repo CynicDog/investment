@@ -69,6 +69,27 @@ jobs:
           git commit -m "chore(risks): file new risks from earnings watcher (run #${{ github.run_id }})"
           git push
 
+      - name: Refresh upcoming-earnings dashboard
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: uv run python scripts/render_upcoming_earnings.py
+
+      - name: Commit dashboard if changed
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if git diff --quiet portfolio/dashboards/upcoming-earnings.md; then
+            echo "Dashboard unchanged."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
+          git add portfolio/dashboards/upcoming-earnings.md
+          git commit -m "chore(dashboards): refresh upcoming-earnings (run #${{ github.run_id }})"
+          git push
+
       - name: Refresh Risks Index issue
         if: always()
         env:
