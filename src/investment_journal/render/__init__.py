@@ -1,7 +1,11 @@
 """Renderers: model → markdown."""
 
 from investment_journal.render.dashboard import (
+    PNL_BLOCK_END,
+    PNL_BLOCK_START,
     render_capital_flow_sankey,
+    render_dca_pnl,
+    render_dca_pnl_issue_block,
     render_upcoming_earnings,
 )
 from investment_journal.render.issue_body import (
@@ -14,7 +18,11 @@ from investment_journal.render.issue_body import (
 )
 
 __all__ = [
+    "PNL_BLOCK_END",
+    "PNL_BLOCK_START",
     "render_capital_flow_sankey",
+    "render_dca_pnl",
+    "render_dca_pnl_issue_block",
     "render_upcoming_earnings",
     "render_dca_tracker",
     "render_earnings_event",

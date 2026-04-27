@@ -19,6 +19,7 @@ from investment_journal.models.weekly_review import (
 from investment_journal.models.thesis_review import ThesisReview, ThesisVerdict
 from investment_journal.models.earnings_event import EarningsEvent, EarningsRecap
 from investment_journal.models.dca_tracker import DCATracker, DCATick
+from investment_journal.models.dca_history import DCAFill, DCAHistory, Mark
 from investment_journal.models.tone import DISCLAIMER, TONE_RULES, Tone
 
 __all__ = [
@@ -40,6 +41,9 @@ __all__ = [
     "EarningsRecap",
     "DCATracker",
     "DCATick",
+    "DCAFill",
+    "DCAHistory",
+    "Mark",
     "Tone",
     "TONE_RULES",
     "DISCLAIMER",
