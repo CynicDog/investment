@@ -22,7 +22,7 @@ How the system is wired. If you change the math, the schemas, or the workflow sh
 - `models/` — Pydantic models that validate inputs (yaml, dossier markdown).
 - `render/` — pure functions that turn validated models into markdown for issue bodies + dashboards.
 
-Workflows that author content (`weekly-review.yml`, `earnings-watcher.yml`, `dca-tracker.yml`, `thesis-review.yml`, `risks-index-sync.yml`, `update-dashboards.yml`) load the DSL via `uv sync --frozen` and either:
+Workflows that author content (`weekly-review.yml`, `earnings-watcher.yml`, `earnings-recap.yml`, `dca-tracker.yml`, `thesis-review.yml`, `risks-index-sync.yml`, `update-dashboards.yml`) load the DSL via `uv sync --frozen` and either:
 - call a renderer directly (deterministic case — dashboards, risks index, dca-tracker), or
 - emit markdown that **must conform to the model's documented shape** (Claude case — weekly review, earnings recap). Doc anchors in `docs/PROMPTS.md` instruct Claude on the shape, but they don't yet validate Claude's output.
 
@@ -69,7 +69,8 @@ A bullet is **never** ticked by automation. The `issue-checkbox-tick.yml` workfl
 | `dca-tracker.yml` | Sun 22 UTC + dispatch | open dca-tracker issues | closes prior, opens new tracker issue |
 | `thesis-review.yml` | 1st of month 22 UTC + dispatch | `allocation.yml`, existing thesis-review issues | one issue per ticker for the just-completed month (idempotent) |
 | `weekly-review.yml` | Fri 21:30 UTC + dispatch | full repo + open risk issues + closed dca-tracker issues + web | new weekly-review issue; new `risks/R-*.md` files (committed by the workflow) |
-| `earnings-watcher.yml` | daily 13 UTC + dispatch | tickers + open earnings issues + open risk issues + web | earnings issues (open / comment / edit); optionally `risks/R-*.md` |
+| `earnings-watcher.yml` | daily 13 UTC + dispatch | tickers + open earnings issues + open risk issues + web | new pre-call earnings issues; `dashboards/upcoming-earnings.md`; optionally `risks/R-*.md` |
+| `earnings-recap.yml` | daily 13:30 UTC + dispatch | open earnings issues past their date + web | `### Recap` comment on the issue; ticks `Earnings released` / `Recap published`; optionally `risks/R-*.md` |
 | `risks-index-sync.yml` | push to `risks/R-*.md` + dispatch | all `risks/R-*.md` | Risks Index issue body (creates+pins on first run) |
 | `claude-mention.yml` | `@claude` in issue/PR | as Claude reads | issue/PR comments |
 | `issue-checkbox-tick.yml` | edit/comment on `auto-tick`-labeled issue | issue body | flipped `[ ] → [x]`, one summary comment; never on `dca-tracker` |

@@ -122,6 +122,8 @@ _Personal journal. Not financial advice._
 
 ## earnings-watcher
 
+Pre-call only. Post-call recaps are authored by `## earnings-recap` (a separate workflow).
+
 Inputs:
 - `portfolio/allocation.yml`
 - Open earnings issues: `gh issue list --label earnings --state open`
@@ -131,26 +133,44 @@ Loop per ticker. For each:
 
 1. Web-search the next confirmed earnings date. Trust order: company IR site > NASDAQ earnings calendar > broker page. Aggregators are unreliable — do not date from them.
 2. If no primary-source confirmation, skip this ticker for the run.
-3. **Pre-call**: if the date is within 7 days AND no open issue with title matching `Earnings: {TICKER} {QQ}{YY}` exists:
+3. **Open the pre-call issue**: if the date is within 7 days AND no open issue with title matching `Earnings: {TICKER} {QQ}{YY}` exists:
    - Compute the quarter label (`1Q26` for Jan–Mar 2026).
    - Open an issue with title `Earnings: {TICKER} {QQ}{YY}`, labels `earnings,auto-tick`. Body must mirror the `EarningsEvent` shape (header date + `## Tracking checklist` + optional `## Prep notes`).
-4. **Post-call**: if the earnings date is in the past 0–3 days AND the issue body lacks a `### Recap` block:
-   - Web-search the press release + transcript. If transcript is not yet available, post a partial recap based on the press release alone and add `_transcript pending_`.
-   - Post a comment on the issue with shape:
-     ```markdown
-     ### Recap
-
-     - **Reported:** rev $X.XXB ({+/-X% YoY}); EPS $X.XX (cite source).
-     - **Guidance:** raised | reiterated | lowered — {quoted line}.
-     - **Call quotes:**
-       - > {short verbatim line that moves the thesis}
-     - **Thesis impact:** pending human review.
-     - **Sources:** [press release](url), [transcript](url)
-     ```
-   - Edit the issue body to flip `[ ] Earnings released` → `[x]` and `[ ] Recap published` → `[x]`. Leave others untouched.
-5. **Risk filing**: if the recap reveals a material thesis-impacting concern that is NOT already an open risk, file one with `--surfaced-in "earnings/<TICKER>-<QQYY>"`. Do not file speculative or low-conviction risks here.
+4. **Risk filing (prep stage)**: if writing prep notes surfaces a material thesis-impacting concern that is NOT already an open risk (e.g. guidance reset signals from peer prints, supply-chain alerts), file one with `--surfaced-in "earnings/<TICKER>-<QQYY>"`. Do not file speculative or low-conviction risks here.
 
 Be conservative. Skip a day rather than publish a wrong date.
+
+---
+
+## earnings-recap
+
+Post-call only. Recap lives as a comment on the existing earnings issue (the body itself stays canonical to `render_earnings_event`'s output; only the tracking checklist gets ticked).
+
+Inputs:
+- Open earnings issues: `gh issue list --label earnings --state open --json number,title,body`
+- If env var `ISSUE_NUMBER` is set (manual dispatch), scope to just that issue and skip the date-window filter.
+- Otherwise, filter to issues whose `Expected: **YYYY-MM-DD**` line is in the past 0–3 days.
+- Open risk issues (to avoid duplicates): `gh issue list --label risk --state open`
+
+For each in-scope issue:
+
+1. **Idempotency check**: `gh issue view <N> --comments`. If any existing comment contains a line starting with `### Recap`, skip this issue entirely. Do not post a second recap.
+2. Web-search the press release + earnings call transcript. Trust order: company IR site / 8-K > earnings call transcript host (Motley Fool, Seeking Alpha) > reputable trade press. If the transcript is not yet available, post a partial recap based on the press release alone and add `_transcript pending_` on its own line at the end.
+3. **Post the recap comment** with shape:
+   ```markdown
+   ### Recap
+
+   - **Reported:** rev $X.XXB ({+/-X% YoY}); EPS $X.XX (cite source).
+   - **Guidance:** raised | reiterated | lowered — {quoted line}.
+   - **Call quotes:**
+     - > {short verbatim line that moves the thesis}
+   - **Thesis impact:** pending human review.
+   - **Sources:** [press release](url), [transcript](url)
+   ```
+4. **Tick the body checkboxes**: `gh issue edit <N> --body-file <new>` to flip `[ ] Earnings released` → `[x]` and `[ ] Recap published` → `[x]`. Preserve every other byte of the body, including the other three checklist items (`Prep notes written`, `Thesis-impact assessed`, `Position dossier updated`) — those are subjective and stay for human review.
+5. **Risk filing (post-call)**: if the recap reveals a material thesis-impacting concern that is NOT already an open risk, file one with `--surfaced-in "earnings/<TICKER>-<QQYY>"`. Do not file speculative or low-conviction risks here.
+
+Be conservative. Skip a day rather than publish wrong numbers.
 
 ---
 

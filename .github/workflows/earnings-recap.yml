@@ -1,9 +1,14 @@
-name: Earnings watcher
+name: Earnings recap
 
 on:
   schedule:
-    - cron: "0 13 * * *"
+    - cron: "30 13 * * *"
   workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Optional: limit to a single earnings issue (e.g. 28). Empty = scan all open earnings issues."
+        required: false
+        type: string
 
 permissions:
   contents: write   # may file risks (commit risks/R-*.md)
@@ -12,7 +17,7 @@ permissions:
   actions: read
 
 jobs:
-  watch:
+  recap:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,33 +30,40 @@ jobs:
       - name: Install project
         run: uv sync --frozen
 
-      - name: Run Claude earnings watcher
+      - name: Run Claude earnings recap
         uses: anthropics/claude-code-action@v1
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
-            You are running the daily pre-call earnings watcher for ${{ github.repository }}.
-            Read `docs/PROMPTS.md` (anchor `## earnings-watcher`) and follow it verbatim.
-            Post-call recaps are owned by a separate workflow (`earnings-recap.yml`); do not
-            author recap comments here.
+            You are running the post-call earnings recap pass for ${{ github.repository }}.
+            Read `docs/PROMPTS.md` (anchor `## earnings-recap`) and follow it verbatim.
             The DSL is codified under `src/investment_journal/` — schemas for
-            `EarningsEvent` and `Risk` define the issue + risk shapes.
+            `EarningsEvent`, `EarningsRecap`, and `Risk` define the recap shape.
 
             Inputs:
-              - portfolio/allocation.yml (list of tickers)
-              - open earnings issues: gh issue list --label earnings --state open
+              - open earnings issues: gh issue list --label earnings --state open --json number,title,body
+              - if env var ISSUE_NUMBER is set (manual dispatch), scope to just that issue
+                and skip the date-window filter; otherwise filter to issues whose expected
+                date is in the past 0–3 days.
 
-            If pre-call prep surfaces a material thesis-impacting concern, file a risk:
+            Idempotency: skip any issue whose existing comments already include a `### Recap`
+            line (check via `gh issue view <N> --comments`). Do not post duplicate recaps.
+
+            If the recap reveals a material thesis-impacting concern that is NOT already
+            an open risk, file one:
               uv run python scripts/file_a_risk.py \
                 --title "..." --severity low|medium|high \
                 --surfaced-in "earnings/<TICKER>-<QQYY>" \
                 --ticker "<TICKER>" \
                 --description "..." --monitor-for "..."
 
-            Be conservative: skip a ticker if you cannot confirm dates from a primary source.
+            Be conservative: skip a ticker if you cannot confirm numbers from a primary source.
+            Transcripts may lag the press release — partial recap with `_transcript pending_`
+            is allowed; do not invent quotes.
           claude_args: |
             --model claude-sonnet-4-6
             --allowedTools "Read,Glob,Grep,Write,Bash(uv run python:*),Bash(uv run:*),Bash(date:*),Bash(cat:*),Bash(gh issue list:*),Bash(gh issue view:*),Bash(gh issue create:*),Bash(gh issue comment:*),Bash(gh issue edit:*),Bash(gh api *),WebSearch,WebFetch"
@@ -68,28 +80,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
           git add risks/
-          git commit -m "chore(risks): file new risks from earnings watcher (run #${{ github.run_id }})"
-          git push
-
-      - name: Refresh upcoming-earnings dashboard
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-        run: uv run python scripts/render_upcoming_earnings.py
-
-      - name: Commit dashboard if changed
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          if git diff --quiet portfolio/dashboards/upcoming-earnings.md; then
-            echo "Dashboard unchanged."
-            exit 0
-          fi
-          git config user.name  "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
-          git add portfolio/dashboards/upcoming-earnings.md
-          git commit -m "chore(dashboards): refresh upcoming-earnings (run #${{ github.run_id }})"
+          git commit -m "chore(risks): file new risks from earnings recap (run #${{ github.run_id }})"
           git push
 
       - name: Refresh Risks Index issue
