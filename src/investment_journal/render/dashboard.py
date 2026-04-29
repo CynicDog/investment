@@ -191,7 +191,7 @@ def render_upcoming_earnings(
     ]
     for e, n in upcoming:
         timing = "—" if e.timing == "unknown" else e.timing
-        ref = f"#{n}" if n else "—"
+        ref = f"[#{n}](../../issues/{n})" if n else "—"
         lines.append(
             f"| {e.expected_date.isoformat()} | {e.ticker} | {e.quarter} | {timing} | {ref} |"
         )
