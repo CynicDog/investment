@@ -88,6 +88,7 @@ jobs:
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
           git add risks/
           git commit -m "chore(risks): file new risks from weekly review (run #${{ github.run_id }})"
+          git pull --rebase origin main
           git push
 
       - name: Refresh Risks Index issue

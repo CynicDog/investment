@@ -69,6 +69,7 @@ jobs:
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
           git add risks/
           git commit -m "chore(risks): file new risks from earnings watcher (run #${{ github.run_id }})"
+          git pull --rebase origin main
           git push
 
       - name: Refresh upcoming-earnings dashboard
@@ -90,6 +91,7 @@ jobs:
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
           git add portfolio/dashboards/upcoming-earnings.md
           git commit -m "chore(dashboards): refresh upcoming-earnings (run #${{ github.run_id }})"
+          git pull --rebase origin main
           git push
 
       - name: Refresh Risks Index issue

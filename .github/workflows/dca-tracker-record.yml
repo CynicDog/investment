@@ -64,4 +64,5 @@ jobs:
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
           git add portfolio/dca_history.json portfolio/dashboards/dca-pnl.md
           git commit -m "chore(dca): record fills + refresh P&L (issue #${{ github.event.issue.number || inputs.issue_number }}, run #${{ github.run_id }})"
+          git pull --rebase origin main
           git push
