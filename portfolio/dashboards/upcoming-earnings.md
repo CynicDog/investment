@@ -6,6 +6,6 @@ _Window: 2026-04-30 → 2026-07-29 (90 days). Updated 2026-04-30._
 
 | Date | Ticker | Quarter | Timing | Issue |
 |---|---|---|---|---|
-| 2026-04-30 | IDCC | 1Q26 | pre-market | [#29](../../issues/29) |
-| 2026-05-05 | ETN | 1Q26 | pre-market | [#39](../../issues/39) |
-| 2026-05-05 | HALO | 1Q26 | post-close | [#40](../../issues/40) |
+| 2026-04-30 | IDCC | 1Q26 | pre-market | [#29](https://github.com/CynicDog/investment-journal/issues/29) |
+| 2026-05-05 | ETN | 1Q26 | pre-market | [#39](https://github.com/CynicDog/investment-journal/issues/39) |
+| 2026-05-05 | HALO | 1Q26 | post-close | [#40](https://github.com/CynicDog/investment-journal/issues/40) |

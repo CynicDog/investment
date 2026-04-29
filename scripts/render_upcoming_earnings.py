@@ -119,6 +119,7 @@ def main() -> int:
         events,
         today=date.today(),
         horizon_days=args.horizon,
+        repo=args.repo,
     )
     DASHBOARD_PATH.write_text(body)
     print(

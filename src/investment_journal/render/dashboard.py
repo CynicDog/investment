@@ -161,6 +161,7 @@ def render_upcoming_earnings(
     *,
     today: date,
     horizon_days: int = 90,
+    repo: str | None = None,
 ) -> str:
     """Sorted table of upcoming earnings within `horizon_days`.
 
@@ -191,7 +192,12 @@ def render_upcoming_earnings(
     ]
     for e, n in upcoming:
         timing = "—" if e.timing == "unknown" else e.timing
-        ref = f"[#{n}](../../issues/{n})" if n else "—"
+        if n is None:
+            ref = "—"
+        elif repo:
+            ref = f"[#{n}](https://github.com/{repo}/issues/{n})"
+        else:
+            ref = f"#{n}"
         lines.append(
             f"| {e.expected_date.isoformat()} | {e.ticker} | {e.quarter} | {timing} | {ref} |"
         )
