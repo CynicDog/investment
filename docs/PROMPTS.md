@@ -118,6 +118,105 @@ _Personal journal. Not financial advice._
 - If you cannot find a primary source for a number, mark it `(unverified)`.
 - If you cannot confirm a risk is real, do not file it. Conservative beats noisy.
 
+## thesis-review
+
+Monthly red-team of each position's thesis. The point is **stress-testing**, not affirmation — challenge bull-case bullets against current data, strengthen bear-case bullets where new evidence supports it, and surface concerns the user might rationalise away. Final verdict still belongs to the user; your job is to put the strongest case against each thesis on the table.
+
+Inputs you must read per ticker, before composing anything:
+
+- `portfolio/allocation.yml` — target weight + DCA size (concentration risk reads differently at 25% vs 5%).
+- `portfolio/positions/<TICKER>.md` — full dossier: current thesis, bull / bear bullets, valuation snapshot, recent earnings table, news log inside `<!-- news-start --> ... <!-- news-end -->`.
+- Recent weekly-review issues (last ~6 weeks):
+  ```bash
+  gh issue list --label weekly-review --state all --limit 6 --json number,title,body,closedAt
+  ```
+- Last 1–2 earnings recaps for the ticker (closed `earnings` issues filtered to the ticker; read the `### Recap` comment).
+- Open `risk` issues — so you don't duplicate-file an existing concern:
+  ```bash
+  gh issue list --label risk --state open --limit 50 --json number,title,body
+  ```
+
+Then web-search the last 30 days of news per ticker. Source priority (same as weekly review):
+1. Company press release (IR site)
+2. SEC 8-K / 10-Q / 10-K
+3. Earnings call transcripts
+4. Reputable trade press (last resort, must cite)
+
+### Red-team checklist (work through this for each ticker)
+
+For each bull-case bullet in the dossier, ask:
+- Is the supporting data still current? (revenue trajectory, margin trend, market share, guidance.)
+- Has a competitor, regulator, or counterparty done something that erodes it?
+- Is the valuation premise (multiple, FCF yield, growth rate) still defensible vs. peers and history?
+
+For the bear case, ask:
+- Has any listed risk materialised partially or in full since the dossier was last reviewed?
+- Is there a new bear bullet the dossier is missing? (Concentration, customer churn, regulatory action, key-person, supply chain, balance sheet.)
+
+For capital allocation:
+- Buyback pace, dividend coverage, insider buying / selling — anything signalling management confidence shift?
+
+For valuation:
+- Where does the current multiple sit vs. the dossier's `Valuation snapshot` table? Flag mean-reversion risk if the gap widened.
+
+### Risk filing (do this BEFORE composing the issue body)
+
+For every NEW thesis-impacting concern (not already an open risk), file one:
+
+```bash
+uv run python scripts/file_a_risk.py \
+  --title "<one-line, < 120 chars>" \
+  --severity low|medium|high \
+  --surfaced-in "thesis-review/<TICKER>-<YYYY-MM>" \
+  --ticker "<TICKER>" \
+  --description "<2–4 sentences with citation>" \
+  --monitor-for "<concrete signals that would resolve this>"
+```
+
+Capture the printed JSON ids; reference them in the issue body's Risks section. Do not file speculative or low-conviction risks here — if you wouldn't bet a position on it, don't file it.
+
+### Issue body shape
+
+Build via the DSL — do not hand-format:
+
+```bash
+uv run python - <<'PY' > /tmp/body.md
+from investment_journal import Risk, ThesisReview
+from investment_journal.render import render_thesis_review
+
+tr = ThesisReview(
+    ticker="<TICKER>",
+    month="<YYYY-MM>",
+    verdict="still-holds" | "partially" | "no",
+    verdict_note="<one sentence justifying the verdict>",
+    bull_changes="<markdown bullets — what data weakened or strengthened the bull case>",
+    bear_changes="<markdown bullets — what data strengthened the bear case>",
+    action="pending human confirmation — see red-team analysis",
+    risks_surfaced=["R-YYYY-MM-NNN", ...],
+)
+risks_lookup = { ... }  # build from filed-risk JSON
+print(render_thesis_review(tr, risks_lookup))
+PY
+gh issue create --title "Thesis review: <TICKER> <YYYY-MM>" \
+                --label thesis-review --body-file /tmp/body.md
+```
+
+Verdict policy:
+- `still-holds` — only if no material change since last review and no new risk surfaced.
+- `partially` — default whenever any bullet is challenged by new data, even if directionally the thesis survives.
+- `no` — only if the original premise has been contradicted (e.g. moat eroded, guidance reset, fraud).
+
+`action` belongs to the user — leave it as `"pending human confirmation — see red-team analysis"` unless the data unambiguously implies a mechanical action (e.g. "trim — weight drift > 3pp from target").
+
+### Constraints
+
+- Do NOT modify position dossiers, `allocation.yml`, or any auto-rendered dashboard.
+- New `risks/R-*.md` files are the only repo writes you should produce. The workflow commits them after you finish.
+- One issue per ticker per month. The workflow precomputes pending tickers in `$PENDING_TICKERS`; process only those.
+- If you cannot find a primary source for a number, mark it `(unverified)`.
+- If you cannot confirm a risk is real, do not file it. Conservative beats noisy.
+- Cite every claim. A red-team review without sources is just opinion.
+
 ---
 
 ## earnings-watcher

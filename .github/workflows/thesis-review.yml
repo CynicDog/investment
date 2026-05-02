@@ -1,17 +1,25 @@
 name: Monthly thesis review opener
 
-# Opens one thesis-review issue per ticker for the just-completed month.
-# Runs at 22:00 UTC on the 1st of each month. The user fills each in
-# sometime during the new month.
+# Runs at 22:00 UTC on the 1st of each month. For each ticker in
+# allocation.yml that does not already have an open thesis-review issue
+# for the just-completed month, Claude red-teams the dossier against
+# fresh data and opens one issue per ticker. Idempotent: re-running the
+# workflow on the same day is a no-op for any ticker already covered.
 
 on:
   schedule:
     - cron: "0 22 1 * *"
   workflow_dispatch:
+    inputs:
+      month:
+        description: "Override month tag (YYYY-MM). Defaults to prior month."
+        required: false
 
 permissions:
-  contents: read
+  contents: write   # need to commit new risks/R-*.md files
   issues: write
+  id-token: write
+  actions: read
 
 jobs:
   open:
@@ -27,62 +35,121 @@ jobs:
       - name: Install project
         run: uv sync --frozen
 
-      - name: Compute prior month tag
+      - name: Compute month tag
         id: month
         run: |
-          uv run python - <<'PY' >> "$GITHUB_OUTPUT"
+          if [ -n "${{ inputs.month }}" ]; then
+            echo "tag=${{ inputs.month }}" >> "$GITHUB_OUTPUT"
+          else
+            uv run python - <<'PY' >> "$GITHUB_OUTPUT"
           from datetime import date
           today = date.today()
           y, m = (today.year - 1, 12) if today.month == 1 else (today.year, today.month - 1)
           print(f"tag={y:04d}-{m:02d}")
           PY
+          fi
 
-      - name: Open one thesis-review issue per ticker
+      - name: Compute tickers still needing review this month
+        id: tickers
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           TAG: ${{ steps.month.outputs.tag }}
         run: |
           set -e
-          tickers=$(uv run python -c 'from investment_journal import Allocation; print(" ".join(p.ticker for p in Allocation.load("portfolio/allocation.yml").positions))')
-          for tkr in $tickers; do
-            # Skip if an issue with the same title already exists.
+          all_tickers=$(uv run python -c 'from investment_journal import Allocation; print(" ".join(p.ticker for p in Allocation.load("portfolio/allocation.yml").positions))')
+          pending=()
+          for tkr in $all_tickers; do
             existing=$(gh issue list -R "$REPO" --label thesis-review --search "Thesis review: $tkr $TAG in:title" --state all --json number -q '.[].number' | head -1)
             if [ -n "$existing" ]; then
               echo "Skip $tkr — issue #$existing already exists."
-              continue
+            else
+              pending+=("$tkr")
             fi
-            body=$(cat <<EOF
-          Reviewing the thesis for **$tkr** for **$TAG**.
-
-          Dossier: \`portfolio/positions/$tkr.md\`
-
-          ### Does the thesis still hold?
-
-          _(yes / partially / no — and the one-sentence why)_
-
-          ### What changed in the bull case?
-
-          _…_
-
-          ### What changed in the bear case / risks?
-
-          _…_
-
-          ### Action taken or planned
-
-          _(e.g. trim 2pp; raise 2pp; no change)_
-
-          ### Checklist
-
-          - [ ] Position file thesis section updated
-          - [ ] \`allocation.yml\` updated (if weights changed)
-
-          _Personal journal. Not financial advice._
-          EOF
-          )
-            gh issue create -R "$REPO" \
-              --title "Thesis review: $tkr $TAG" \
-              --label thesis-review \
-              --body "$body"
           done
+          echo "pending=${pending[*]}" >> "$GITHUB_OUTPUT"
+          echo "Pending: ${pending[*]:-<none>}"
+
+      - name: Run Claude thesis red-team
+        if: steps.tickers.outputs.pending != ''
+        uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          MONTH_TAG: ${{ steps.month.outputs.tag }}
+          PENDING_TICKERS: ${{ steps.tickers.outputs.pending }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            You are running the monthly thesis red-team review for ${{ github.repository }}.
+            Read `docs/PROMPTS.md` (anchor `## thesis-review`) and follow it verbatim.
+            The DSL contract is documented in `CLAUDE.md` and codified under
+            `src/investment_journal/` — `ThesisReview` + `render_thesis_review`
+            define the issue shape; do NOT hand-format the body.
+
+            Month being reviewed: $MONTH_TAG
+            Tickers still needing review (space-separated): $PENDING_TICKERS
+
+            Idempotency: process only the tickers in $PENDING_TICKERS. If that
+            list is empty, exit immediately without creating anything.
+
+            Inputs to read per ticker:
+              - portfolio/allocation.yml
+              - portfolio/positions/<TICKER>.md (full dossier)
+              - recent weekly-review issues (last ~6 weeks):
+                  gh issue list --label weekly-review --state all --limit 6 --json number,title,body,closedAt
+              - open risk issues (avoid duplicate filings):
+                  gh issue list --label risk --state open --limit 50 --json number,title,body
+              - last earnings recap for the ticker if any (search closed earnings issues for the ticker).
+
+            Red-team mandate: be critical and objective. Default to challenging
+            each bullet of the dossier's bull case with current data; strengthen
+            the bear case where new evidence supports it. Do not soften a real
+            concern to be polite — the user is asking for stress-testing.
+
+            For each NEW thesis-impacting concern surfaced (not already an open
+            risk), file a risk:
+              uv run python scripts/file_a_risk.py \
+                --title "..." --severity low|medium|high \
+                --surfaced-in "thesis-review/<TICKER>-${MONTH_TAG}" \
+                --ticker "<TICKER>" \
+                --description "..." --monitor-for "..."
+            Capture the printed JSON ids and reference them in the issue body's
+            Risks section.
+
+            Compose each thesis-review issue body via the DSL:
+              uv run python -c "..."  # build ThesisReview, print render_thesis_review(...)
+            Open it with:
+              gh issue create --title "Thesis review: <TICKER> ${MONTH_TAG}" \
+                              --label thesis-review --body-file <file>
+
+            Do NOT modify position dossiers, allocation.yml, or any auto-rendered
+            dashboard. Only new risks/R-*.md files are allowed; the workflow
+            commits those after you finish.
+          claude_args: |
+            --model claude-sonnet-4-6
+            --allowedTools "Read,Glob,Grep,Write,Bash(uv run python:*),Bash(uv run:*),Bash(date:*),Bash(cat:*),Bash(gh issue list:*),Bash(gh issue view:*),Bash(gh issue create:*),Bash(gh issue comment:*),Bash(gh issue edit:*),WebSearch,WebFetch"
+
+      - name: Commit new risk files if any
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [[ -z "$(git status --porcelain risks/)" ]]; then
+            echo "No new risk files to commit."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
+          git add risks/
+          git commit -m "chore(risks): file new risks from thesis review (run #${{ github.run_id }})"
+          git pull --rebase origin main
+          git push
+
+      - name: Refresh Risks Index issue
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: uv run python scripts/render_risks_index.py
