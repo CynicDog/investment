@@ -227,88 +227,88 @@
     {
       "on_date": "2026-05-01",
       "ticker": "VOO",
-      "executed": false,
+      "executed": true,
       "target_usd": 29.0,
-      "price_usd": null,
-      "shares": null
+      "price_usd": 662.52,
+      "shares": 0.04377226347883838
     },
     {
       "on_date": "2026-05-01",
       "ticker": "HLNE",
-      "executed": false,
+      "executed": true,
       "target_usd": 15.0,
-      "price_usd": null,
-      "shares": null
+      "price_usd": 92.56,
+      "shares": 0.162057044079516
     },
     {
       "on_date": "2026-05-01",
       "ticker": "HALO",
-      "executed": false,
+      "executed": true,
       "target_usd": 15.0,
-      "price_usd": null,
-      "shares": null
+      "price_usd": 63.96,
+      "shares": 0.23452157598499063
     },
     {
       "on_date": "2026-05-01",
       "ticker": "ETN",
-      "executed": false,
+      "executed": true,
       "target_usd": 14.0,
-      "price_usd": null,
-      "shares": null
+      "price_usd": 425.55,
+      "shares": 0.0328986018094231
     },
     {
       "on_date": "2026-05-01",
       "ticker": "MKL",
-      "executed": false,
+      "executed": true,
       "target_usd": 11.0,
-      "price_usd": null,
-      "shares": null
+      "price_usd": 1779.36,
+      "shares": 0.006181998021760633
     },
     {
       "on_date": "2026-05-01",
       "ticker": "IDCC",
-      "executed": false,
+      "executed": true,
       "target_usd": 8.0,
-      "price_usd": null,
-      "shares": null
+      "price_usd": 290.5,
+      "shares": 0.027538726333907058
     },
     {
       "on_date": "2026-05-01",
       "ticker": "P",
-      "executed": false,
+      "executed": true,
       "target_usd": 8.0,
-      "price_usd": null,
-      "shares": null
+      "price_usd": 71.62,
+      "shares": 0.1117006422786931
     }
   ],
   "marks": {
     "ETN": {
-      "price_usd": 433.01,
-      "as_of": "2026-04-30"
+      "price_usd": 425.55,
+      "as_of": "2026-05-01"
     },
     "HALO": {
-      "price_usd": 63.66,
-      "as_of": "2026-04-30"
+      "price_usd": 63.96,
+      "as_of": "2026-05-01"
     },
     "HLNE": {
-      "price_usd": 91.99,
-      "as_of": "2026-04-30"
+      "price_usd": 92.56,
+      "as_of": "2026-05-01"
     },
     "IDCC": {
-      "price_usd": 296.56,
-      "as_of": "2026-04-30"
+      "price_usd": 290.5,
+      "as_of": "2026-05-01"
     },
     "MKL": {
-      "price_usd": 1772.47,
-      "as_of": "2026-04-30"
+      "price_usd": 1779.36,
+      "as_of": "2026-05-01"
     },
     "VOO": {
-      "price_usd": 660.58,
-      "as_of": "2026-04-30"
+      "price_usd": 662.52,
+      "as_of": "2026-05-01"
     },
     "P": {
-      "price_usd": 71.45,
-      "as_of": "2026-04-30"
+      "price_usd": 71.62,
+      "as_of": "2026-05-01"
     }
   }
 }
