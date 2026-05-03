@@ -100,7 +100,9 @@ class Risk(BaseModel):
             if self.resolved_on is None:
                 raise ValueError("status='resolved' requires resolved_on")
             if not self.resolution_note:
-                raise ValueError("status='resolved' requires resolution_note (use the Resolution section)")
+                raise ValueError(
+                    "status='resolved' requires resolution_note (use the Resolution section)"
+                )
         else:
             if self.resolved_on is not None or self.resolution_note is not None:
                 raise ValueError(
@@ -114,12 +116,16 @@ class Risk(BaseModel):
         description = _section(body, "Description")
         monitor_for = _section(body, "Monitor for")
         resolution = _section(body, "Resolution")
-        return cls.model_validate({
-            **fm,
-            "description": description,
-            "monitor_for": monitor_for,
-            "resolution_note": resolution if (fm.get("status") == "resolved" and resolution) else None,
-        })
+        return cls.model_validate(
+            {
+                **fm,
+                "description": description,
+                "monitor_for": monitor_for,
+                "resolution_note": resolution
+                if (fm.get("status") == "resolved" and resolution)
+                else None,
+            }
+        )
 
     @classmethod
     def load(cls, path) -> "Risk":
@@ -147,7 +153,9 @@ class Risk(BaseModel):
         if self.issue_number is not None:
             meta["issue_number"] = self.issue_number
 
-        fm = yaml.safe_dump(meta, sort_keys=False, allow_unicode=True, width=120).strip()
+        fm = yaml.safe_dump(
+            meta, sort_keys=False, allow_unicode=True, width=120
+        ).strip()
 
         parts = [
             "---",

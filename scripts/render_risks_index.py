@@ -48,9 +48,18 @@ def gh(*args: str, check: bool = True) -> str:
 
 def find_index_issue(repo: str) -> int | None:
     out = gh(
-        "issue", "list", "-R", repo,
-        "--label", INDEX_LABEL, "--state", "all", "--limit", "5",
-        "--json", "number,title",
+        "issue",
+        "list",
+        "-R",
+        repo,
+        "--label",
+        INDEX_LABEL,
+        "--state",
+        "all",
+        "--limit",
+        "5",
+        "--json",
+        "number,title",
     )
     items = json.loads(out or "[]")
     for it in items:
@@ -85,10 +94,16 @@ def main() -> int:
     n = find_index_issue(args.repo)
     if n is None:
         out = gh(
-            "issue", "create", "-R", args.repo,
-            "--title", INDEX_TITLE,
-            "--label", INDEX_LABEL,
-            "--body-file", str(body_file),
+            "issue",
+            "create",
+            "-R",
+            args.repo,
+            "--title",
+            INDEX_TITLE,
+            "--label",
+            INDEX_LABEL,
+            "--body-file",
+            str(body_file),
         )
         url = out.strip().splitlines()[-1] if out else ""
         new_n = int(url.rsplit("/", 1)[-1]) if "/" in url else None
@@ -98,11 +113,18 @@ def main() -> int:
             print(f"Pinned issue #{new_n}.")
     else:
         gh(
-            "issue", "edit", str(n), "-R", args.repo,
-            "--body-file", str(body_file),
+            "issue",
+            "edit",
+            str(n),
+            "-R",
+            args.repo,
+            "--body-file",
+            str(body_file),
         )
-        print(f"Updated Risks Index issue #{n} ({len(risks)} risks; "
-              f"{sum(1 for r in risks if r.status != 'resolved')} open).")
+        print(
+            f"Updated Risks Index issue #{n} ({len(risks)} risks; "
+            f"{sum(1 for r in risks if r.status != 'resolved')} open)."
+        )
 
     body_file.unlink(missing_ok=True)
     return 0

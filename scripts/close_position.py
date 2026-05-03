@@ -27,8 +27,11 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from investment_journal.models.dossier import Dossier, HEADER_LINE_RE, CLOSED_HEADER_LINE_RE
-from investment_journal.models.risk import Risk
+from investment_journal.models.dossier import (  # noqa: E402
+    Dossier,
+    HEADER_LINE_RE,
+)
+from investment_journal.models.risk import Risk  # noqa: E402
 
 
 def main() -> None:
@@ -48,7 +51,10 @@ def main() -> None:
 
     dossier = Dossier.from_file(dossier_path)
     if dossier.status == "closed":
-        print(f"ERROR: {ticker} dossier is already marked CLOSED (closed_on={dossier.closed_on})", file=sys.stderr)
+        print(
+            f"ERROR: {ticker} dossier is already marked CLOSED (closed_on={dossier.closed_on})",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     # Rewrite header line in the raw markdown
@@ -81,7 +87,12 @@ def main() -> None:
     # Collect open risks for this ticker
     risks_dir = REPO_ROOT / "risks"
     open_risks = [
-        {"id": r.id, "title": r.title, "severity": r.severity, "issue_number": r.issue_number}
+        {
+            "id": r.id,
+            "title": r.title,
+            "severity": r.severity,
+            "issue_number": r.issue_number,
+        }
         for r in Risk.load_all(risks_dir)
         if r.ticker == ticker and r.status != "resolved"
     ]

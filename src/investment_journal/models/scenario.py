@@ -45,12 +45,12 @@ from pydantic import BaseModel, Field, model_validator
 
 
 TriggerType = Literal[
-    "metric",           # quantitative threshold (e.g., FCF yield < X%)
-    "thesis-verdict",   # thesis review returns 'no' or 'partially'
-    "watchlist",        # watchlist candidate passes all quality buckets
-    "time-gate",        # specific date or horizon milestone reached
-    "dca-shift",        # portfolio-level DCA budget change condition
-    "drip",             # dividend income crosses a reinvestment threshold
+    "metric",  # quantitative threshold (e.g., FCF yield < X%)
+    "thesis-verdict",  # thesis review returns 'no' or 'partially'
+    "watchlist",  # watchlist candidate passes all quality buckets
+    "time-gate",  # specific date or horizon milestone reached
+    "dca-shift",  # portfolio-level DCA budget change condition
+    "drip",  # dividend income crosses a reinvestment threshold
 ]
 
 ScenarioStatus = Literal["active", "triggered", "resolved", "dismissed"]
@@ -99,7 +99,9 @@ class Scenario(BaseModel):
                 raise ValueError(f"status='{self.status}' requires triggered_on")
         else:
             if self.triggered_on is not None:
-                raise ValueError("triggered_on only applies when status is triggered or resolved")
+                raise ValueError(
+                    "triggered_on only applies when status is triggered or resolved"
+                )
         if self.status == "resolved" and not self.resolution_note:
             raise ValueError("status='resolved' requires resolution_note")
         return self
@@ -110,12 +112,14 @@ class Scenario(BaseModel):
         trigger_description = _section(body, "Trigger")
         action_description = _section(body, "Action")
         context = _section(body, "Context")
-        return cls.model_validate({
-            **fm,
-            "trigger_description": trigger_description,
-            "action_description": action_description,
-            "context": context,
-        })
+        return cls.model_validate(
+            {
+                **fm,
+                "trigger_description": trigger_description,
+                "action_description": action_description,
+                "context": context,
+            }
+        )
 
     @classmethod
     def load(cls, path) -> "Scenario":
@@ -138,7 +142,9 @@ class Scenario(BaseModel):
         if self.issue_number is not None:
             meta["issue_number"] = self.issue_number
 
-        fm = yaml.safe_dump(meta, sort_keys=False, allow_unicode=True, width=120).strip()
+        fm = yaml.safe_dump(
+            meta, sort_keys=False, allow_unicode=True, width=120
+        ).strip()
 
         parts = [
             "---",

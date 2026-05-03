@@ -36,7 +36,7 @@ import sys
 import time
 import urllib.parse
 import urllib.request
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from pathlib import Path
 
 from investment_journal import Allocation, DCAFill, DCAHistory, Mark
@@ -61,8 +61,6 @@ WEEK_OF_RE = re.compile(r"week of \*\*(\d{4}-\d{2}-\d{2})\*\*")
 DISCLAIMER_LINE = "_Personal journal. Not financial advice._"
 
 
-# ---------- gh helpers ----------
-
 def gh(*args: str, check: bool = True) -> str:
     res = subprocess.run(["gh", *args], capture_output=True, text=True, check=False)
     if check and res.returncode != 0:
@@ -72,15 +70,15 @@ def gh(*args: str, check: bool = True) -> str:
 
 
 def fetch_issue(repo: str, number: int) -> dict:
-    out = gh("issue", "view", str(number), "-R", repo, "--json", "number,title,body,labels")
+    out = gh(
+        "issue", "view", str(number), "-R", repo, "--json", "number,title,body,labels"
+    )
     return json.loads(out)
 
 
 def is_dca_tracker(issue: dict) -> bool:
     return any(lbl["name"] == "dca-tracker" for lbl in issue.get("labels", []))
 
-
-# ---------- Alpha Vantage ----------
 
 class AlphaVantage:
     """Minimal Alpha Vantage TIME_SERIES_DAILY client. One HTTP call per ticker
@@ -96,18 +94,31 @@ class AlphaVantage:
     def _series(self, symbol: str) -> dict[date, float]:
         if symbol in self._cache:
             return self._cache[symbol]
-        url = self.BASE + "?" + urllib.parse.urlencode({
-            "function": "TIME_SERIES_DAILY",
-            "symbol": symbol,
-            "outputsize": "compact",
-            "apikey": self.api_key,
-        })
+        url = (
+            self.BASE
+            + "?"
+            + urllib.parse.urlencode(
+                {
+                    "function": "TIME_SERIES_DAILY",
+                    "symbol": symbol,
+                    "outputsize": "compact",
+                    "apikey": self.api_key,
+                }
+            )
+        )
         sys.stderr.write(f"alpha-vantage: fetching {symbol}\n")
         with urllib.request.urlopen(url, timeout=30) as resp:
             data = json.load(resp)
         if "Time Series (Daily)" not in data:
-            note = data.get("Note") or data.get("Information") or data.get("Error Message") or str(data)[:200]
-            raise RuntimeError(f"Alpha Vantage did not return daily series for {symbol}: {note}")
+            note = (
+                data.get("Note")
+                or data.get("Information")
+                or data.get("Error Message")
+                or str(data)[:200]
+            )
+            raise RuntimeError(
+                f"Alpha Vantage did not return daily series for {symbol}: {note}"
+            )
         series: dict[date, float] = {}
         for k, v in data["Time Series (Daily)"].items():
             try:
@@ -118,7 +129,9 @@ class AlphaVantage:
         time.sleep(1.0)  # be nice to the free tier
         return series
 
-    def close_on_or_before(self, symbol: str, target: date, max_lookback_days: int = 7) -> tuple[date, float]:
+    def close_on_or_before(
+        self, symbol: str, target: date, max_lookback_days: int = 7
+    ) -> tuple[date, float]:
         """Return (resolved_date, close). Walks back up to max_lookback_days from target
         to find the nearest prior trading day if target is a non-trading day."""
         series = self._series(symbol)
@@ -136,8 +149,6 @@ class AlphaVantage:
         latest_date = max(series)
         return latest_date, series[latest_date]
 
-
-# ---------- Issue body parsing & editing ----------
 
 def parse_week_of(body: str) -> date:
     m = WEEK_OF_RE.search(body)
@@ -167,8 +178,6 @@ def inject_pnl_block(body: str, block: str) -> str:
     return body.rstrip() + "\n\n" + block + "\n"
 
 
-# ---------- main ----------
-
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--issue", type=int, required=True)
@@ -185,7 +194,9 @@ def main() -> int:
 
     issue = fetch_issue(args.repo, args.issue)
     if not is_dca_tracker(issue):
-        sys.stderr.write(f"issue #{args.issue} is not labeled dca-tracker; nothing to do.\n")
+        sys.stderr.write(
+            f"issue #{args.issue} is not labeled dca-tracker; nothing to do.\n"
+        )
         return 0
 
     body = issue["body"] or ""
@@ -196,7 +207,11 @@ def main() -> int:
         return 0
 
     allocation = Allocation.load(ALLOCATION_PATH)
-    targets = {p.ticker: p.dca_per_day_usd for p in allocation.positions if p.dca_per_day_usd > 0}
+    targets = {
+        p.ticker: p.dca_per_day_usd
+        for p in allocation.positions
+        if p.dca_per_day_usd > 0
+    }
 
     history = DCAHistory.load(HISTORY_PATH)
     av = AlphaVantage(api_key)
@@ -217,17 +232,28 @@ def main() -> int:
                         f"note: {ticker} {on_date} is non-trading; using {resolved_date} close.\n"
                     )
                 shares = target_usd / close
-                history.upsert(DCAFill(
-                    on_date=on_date, ticker=ticker, executed=True,
-                    target_usd=target_usd, price_usd=close, shares=shares,
-                ))
+                history.upsert(
+                    DCAFill(
+                        on_date=on_date,
+                        ticker=ticker,
+                        executed=True,
+                        target_usd=target_usd,
+                        price_usd=close,
+                        shares=shares,
+                    )
+                )
                 new_or_changed += 1
             else:
                 if existing and not existing.executed:
                     continue
-                history.upsert(DCAFill(
-                    on_date=on_date, ticker=ticker, executed=False, target_usd=target_usd,
-                ))
+                history.upsert(
+                    DCAFill(
+                        on_date=on_date,
+                        ticker=ticker,
+                        executed=False,
+                        target_usd=target_usd,
+                    )
+                )
                 new_or_changed += 1
 
     for ticker in sorted(targets.keys()):
@@ -247,15 +273,27 @@ def main() -> int:
     if new_body != body:
         body_file = REPO_ROOT / ".dca_tracker_body.md"
         body_file.write_text(new_body)
-        gh("issue", "edit", str(args.issue), "-R", args.repo, "--body-file", str(body_file))
+        gh(
+            "issue",
+            "edit",
+            str(args.issue),
+            "-R",
+            args.repo,
+            "--body-file",
+            str(body_file),
+        )
         body_file.unlink(missing_ok=True)
 
-    print(json.dumps({
-        "issue": args.issue,
-        "fills_changed": new_or_changed,
-        "total_fills": len(history.fills),
-        "marks": {t: history.marks[t].price_usd for t in history.marks},
-    }))
+    print(
+        json.dumps(
+            {
+                "issue": args.issue,
+                "fills_changed": new_or_changed,
+                "total_fills": len(history.fills),
+                "marks": {t: history.marks[t].price_usd for t in history.marks},
+            }
+        )
+    )
     return 0
 
 

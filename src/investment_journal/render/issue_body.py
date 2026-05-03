@@ -86,7 +86,10 @@ def render_risks_index(all_risks: list[Risk]) -> str:
         ]
         # Sort: high → medium → low, then by surfaced_on descending.
         sev_order = {"high": 0, "medium": 1, "low": 2}
-        for r in sorted(open_risks, key=lambda r: (sev_order[r.severity], -r.surfaced_on.toordinal())):
+        for r in sorted(
+            open_risks,
+            key=lambda r: (sev_order[r.severity], -r.surfaced_on.toordinal()),
+        ):
             lines.append(_row(r))
     else:
         lines.append("_No open risks._")
@@ -99,7 +102,9 @@ def render_risks_index(all_risks: list[Risk]) -> str:
         ]
         for r in resolved_recent:
             ref = f"#{r.issue_number}" if r.issue_number else r.id
-            note = (r.resolution_note or "").splitlines()[0] if r.resolution_note else "—"
+            note = (
+                (r.resolution_note or "").splitlines()[0] if r.resolution_note else "—"
+            )
             lines.append(
                 f"| `{r.id}` | {r.ticker or '—'} | "
                 f"{r.resolved_on.isoformat() if r.resolved_on else '—'} | "
@@ -112,7 +117,9 @@ def render_risks_index(all_risks: list[Risk]) -> str:
     return "\n".join(lines)
 
 
-def render_weekly_review(wr: WeeklyReview, risks_lookup: dict[str, Risk] | None = None) -> str:
+def render_weekly_review(
+    wr: WeeklyReview, risks_lookup: dict[str, Risk] | None = None
+) -> str:
     risks_lookup = risks_lookup or {}
     lines = [
         f"# Weekly review {wr.iso_week}",
@@ -184,7 +191,9 @@ def render_weekly_review(wr: WeeklyReview, risks_lookup: dict[str, Risk] | None 
     return "\n".join(lines)
 
 
-def render_thesis_review(tr: ThesisReview, risks_lookup: dict[str, Risk] | None = None) -> str:
+def render_thesis_review(
+    tr: ThesisReview, risks_lookup: dict[str, Risk] | None = None
+) -> str:
     risks_lookup = risks_lookup or {}
     lines = [
         f"# Thesis review: {tr.ticker} {tr.month}",
@@ -290,10 +299,22 @@ def render_dca_tracker(t: DCATracker, allocation_table: str | None = None) -> st
         "",
     ]
     for tick in t.ticks:
-        lines.append(_checkbox(f"{tick.weekday} {tick.on_date.isoformat()} — DCA executed at Toss", tick.confirmed))
+        lines.append(
+            _checkbox(
+                f"{tick.weekday} {tick.on_date.isoformat()} — DCA executed at Toss",
+                tick.confirmed,
+            )
+        )
     lines.append("")
     if allocation_table:
-        lines += ["---", "", "Daily target split (per `portfolio/allocation.yml`):", "", allocation_table, ""]
+        lines += [
+            "---",
+            "",
+            "Daily target split (per `portfolio/allocation.yml`):",
+            "",
+            allocation_table,
+            "",
+        ]
     lines += [DISCLAIMER]
     return "\n".join(lines)
 
@@ -302,10 +323,7 @@ def render_watchlist_issue(entry: WatchlistEntry) -> str:
     """Body of the GitHub issue tracking a single watchlist candidate."""
     passed = entry.buckets_passed
     buckets = ["cash", "finance", "stability", "profitability"]
-    badges = " ".join(
-        f"**{b}** ✓" if b in passed else f"~~{b}~~"
-        for b in buckets
-    )
+    badges = " ".join(f"**{b}** ✓" if b in passed else f"~~{b}~~" for b in buckets)
     lines = [
         f"# Watchlist: {entry.ticker} — {entry.name}",
         "",
@@ -358,7 +376,11 @@ def render_scenario_issue(scenario: Scenario) -> str:
         f"_Type:_ **{scenario.trigger_type}** &nbsp;•&nbsp; "
         f"_Ticker:_ **{scenario.ticker or 'portfolio-level'}** &nbsp;•&nbsp; "
         f"_Status:_ **{scenario.status}**"
-        + (f" (triggered {scenario.triggered_on.isoformat()})" if scenario.triggered_on else ""),
+        + (
+            f" (triggered {scenario.triggered_on.isoformat()})"
+            if scenario.triggered_on
+            else ""
+        ),
         "",
         "## Trigger",
         "",
@@ -389,7 +411,9 @@ def render_scenario_issue(scenario: Scenario) -> str:
     return "\n".join(lines)
 
 
-def render_horizon_review(plan: HorizonPlan, scenarios: list[Scenario] | None = None) -> str:
+def render_horizon_review(
+    plan: HorizonPlan, scenarios: list[Scenario] | None = None
+) -> str:
     """Body of the annual horizon review issue for the current phase."""
     scenarios = scenarios or []
     phase = plan.current_phase

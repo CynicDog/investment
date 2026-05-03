@@ -23,7 +23,9 @@ class Position(BaseModel):
         default=None,
         description="Trailing 12-month dividend yield as a percentage (e.g. 1.5 for 1.5%).",
     )
-    div_frequency: Optional[Literal["monthly", "quarterly", "semi-annual", "annual"]] = Field(
+    div_frequency: Optional[
+        Literal["monthly", "quarterly", "semi-annual", "annual"]
+    ] = Field(
         default=None,
         description="Payment frequency. None = no dividend.",
     )

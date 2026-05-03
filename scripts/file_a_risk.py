@@ -66,7 +66,9 @@ def main() -> int:
         required=True,
         help="e.g. 'weekly-review/2026-W17', 'thesis-review/HALO-2026-04', 'earnings/MKL-1Q26', 'manual'",
     )
-    ap.add_argument("--ticker", default=None, help="Optional. None = portfolio-level risk.")
+    ap.add_argument(
+        "--ticker", default=None, help="Optional. None = portfolio-level risk."
+    )
     ap.add_argument("--description", required=True)
     ap.add_argument("--monitor-for", required=True, dest="monitor_for")
     ap.add_argument(
@@ -98,10 +100,16 @@ def main() -> int:
     body_path = path.with_suffix(".body.tmp")
     body_path.write_text(render_risk_issue(risk))
     out = gh(
-        "issue", "create", "-R", args.repo,
-        "--title", f"Risk: {rid} — {args.title}",
-        "--label", "risk",
-        "--body-file", str(body_path),
+        "issue",
+        "create",
+        "-R",
+        args.repo,
+        "--title",
+        f"Risk: {rid} — {args.title}",
+        "--label",
+        "risk",
+        "--body-file",
+        str(body_path),
     )
     body_path.unlink(missing_ok=True)
     issue_url = out.strip().splitlines()[-1] if out else ""
@@ -110,9 +118,16 @@ def main() -> int:
     risk_with_issue = risk.model_copy(update={"issue_number": issue_n})
     path.write_text(risk_with_issue.to_markdown())
 
-    print(json.dumps(
-        {"id": rid, "issue_number": issue_n, "path": str(path.relative_to(REPO_ROOT)), "url": issue_url}
-    ))
+    print(
+        json.dumps(
+            {
+                "id": rid,
+                "issue_number": issue_n,
+                "path": str(path.relative_to(REPO_ROOT)),
+                "url": issue_url,
+            }
+        )
+    )
     return 0
 
 

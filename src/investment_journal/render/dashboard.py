@@ -82,7 +82,9 @@ def render_dca_pnl(history: DCAHistory, *, today: date) -> str:
     if total_cb > 0:
         total_pnl = total_mv - total_cb
         total_pct = (total_mv / total_cb - 1.0) * 100.0
-        lines.append(f"- Unrealized P&L: {_fmt_signed_usd(total_pnl)} ({_fmt_signed_pct(total_pct)})")
+        lines.append(
+            f"- Unrealized P&L: {_fmt_signed_usd(total_pnl)} ({_fmt_signed_pct(total_pct)})"
+        )
     lines.append("")
 
     return "\n".join(lines)
@@ -115,7 +117,9 @@ def render_dca_pnl_issue_block(
             mark = "✓" if f.executed else "—"
             price = _fmt_usd(f.price_usd) if f.price_usd is not None else "—"
             shares = f"{f.shares:,.4f}" if f.shares is not None else "—"
-            lines.append(f"| {f.on_date.isoformat()} | {f.ticker} | {mark} | {price} | {shares} |")
+            lines.append(
+                f"| {f.on_date.isoformat()} | {f.ticker} | {mark} | {price} | {shares} |"
+            )
     else:
         lines.append("_No fills recorded for this week yet._")
 
@@ -141,8 +145,12 @@ def render_dca_pnl_issue_block(
                 f"{_fmt_signed_usd(pnl)} ({_fmt_signed_pct(pct)})"
             )
         else:
-            lines.append(f"- Cost basis {_fmt_usd(total_cb)}; market value pending mark fetch.")
-        lines.append("- Detail: [`portfolio/dashboards/dca-pnl.md`](../blob/main/portfolio/dashboards/dca-pnl.md)")
+            lines.append(
+                f"- Cost basis {_fmt_usd(total_cb)}; market value pending mark fetch."
+            )
+        lines.append(
+            "- Detail: [`portfolio/dashboards/dca-pnl.md`](../blob/main/portfolio/dashboards/dca-pnl.md)"
+        )
 
     lines += ["", f"_Updated {today.isoformat()}._", "", PNL_BLOCK_END]
     return "\n".join(lines)

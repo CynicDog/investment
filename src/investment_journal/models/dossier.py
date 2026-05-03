@@ -106,7 +106,9 @@ class Dossier(BaseModel):
                 body=text,
             )
 
-        closed_hdr = next((line for line in lines if CLOSED_HEADER_LINE_RE.match(line)), None)
+        closed_hdr = next(
+            (line for line in lines if CLOSED_HEADER_LINE_RE.match(line)), None
+        )
         if closed_hdr:
             cm = CLOSED_HEADER_LINE_RE.match(closed_hdr)
             assert cm

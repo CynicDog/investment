@@ -74,7 +74,12 @@ class WatchlistEntry(BaseModel):
 
     @property
     def all_buckets_passed(self) -> bool:
-        return set(self.buckets_passed) == {"cash", "finance", "stability", "profitability"}
+        return set(self.buckets_passed) == {
+            "cash",
+            "finance",
+            "stability",
+            "profitability",
+        }
 
 
 class Watchlist(BaseModel):
@@ -102,6 +107,7 @@ class Watchlist(BaseModel):
     def ready_candidates(self) -> list[WatchlistEntry]:
         """Entries that passed all 4 quality buckets and are still watching/priority."""
         return [
-            e for e in self.watchlist
+            e
+            for e in self.watchlist
             if e.all_buckets_passed and e.status in ("watching", "priority")
         ]

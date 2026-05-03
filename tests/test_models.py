@@ -27,7 +27,6 @@ from investment_journal import (
     metric_keys,
     score_candidate,
 )
-from investment_journal.models.dca_tracker import DCATick
 from investment_journal.models.earnings_event import EarningsRecap
 from investment_journal.models.weekly_review import (
     Catalyst,
@@ -107,27 +106,63 @@ def test_dca_tracker_must_start_on_monday() -> None:
 
 
 def test_dca_fill_executed_requires_price_and_shares() -> None:
-    DCAFill(on_date=date(2026, 4, 21), ticker="VOO", executed=True,
-            target_usd=32.0, price_usd=534.10, shares=32.0 / 534.10)
+    DCAFill(
+        on_date=date(2026, 4, 21),
+        ticker="VOO",
+        executed=True,
+        target_usd=32.0,
+        price_usd=534.10,
+        shares=32.0 / 534.10,
+    )
     DCAFill(on_date=date(2026, 4, 21), ticker="VOO", executed=False, target_usd=32.0)
     with pytest.raises(ValidationError):
         DCAFill(on_date=date(2026, 4, 21), ticker="VOO", executed=True, target_usd=32.0)
     with pytest.raises(ValidationError):
-        DCAFill(on_date=date(2026, 4, 21), ticker="VOO", executed=False,
-                target_usd=32.0, price_usd=534.10, shares=0.06)
+        DCAFill(
+            on_date=date(2026, 4, 21),
+            ticker="VOO",
+            executed=False,
+            target_usd=32.0,
+            price_usd=534.10,
+            shares=0.06,
+        )
 
 
 def test_dca_history_aggregations_and_render() -> None:
     h = DCAHistory()
     monday = date(2026, 4, 20)
     # Two executed VOO fills + one missed day.
-    h.upsert(DCAFill(on_date=monday, ticker="VOO", executed=True,
-                     target_usd=32.0, price_usd=500.0, shares=32.0 / 500.0))
-    h.upsert(DCAFill(on_date=date(2026, 4, 21), ticker="VOO", executed=True,
-                     target_usd=32.0, price_usd=400.0, shares=32.0 / 400.0))
-    h.upsert(DCAFill(on_date=date(2026, 4, 22), ticker="VOO", executed=False, target_usd=32.0))
+    h.upsert(
+        DCAFill(
+            on_date=monday,
+            ticker="VOO",
+            executed=True,
+            target_usd=32.0,
+            price_usd=500.0,
+            shares=32.0 / 500.0,
+        )
+    )
+    h.upsert(
+        DCAFill(
+            on_date=date(2026, 4, 21),
+            ticker="VOO",
+            executed=True,
+            target_usd=32.0,
+            price_usd=400.0,
+            shares=32.0 / 400.0,
+        )
+    )
+    h.upsert(
+        DCAFill(
+            on_date=date(2026, 4, 22), ticker="VOO", executed=False, target_usd=32.0
+        )
+    )
     # Idempotent upsert (overwrites the missed-day entry, no duplicate).
-    h.upsert(DCAFill(on_date=date(2026, 4, 22), ticker="VOO", executed=False, target_usd=32.0))
+    h.upsert(
+        DCAFill(
+            on_date=date(2026, 4, 22), ticker="VOO", executed=False, target_usd=32.0
+        )
+    )
     assert sum(1 for f in h.fills if f.on_date == date(2026, 4, 22)) == 1
     # Cost basis = 32 + 32; shares = 32/500 + 32/400.
     assert h.cost_basis("VOO") == pytest.approx(64.0)
@@ -181,7 +216,9 @@ def test_render_smoke() -> None:
                 thesis_status_note="Range intact.",
             )
         },
-        catalysts_30d=[Catalyst(when=date(2026, 5, 5), ticker="ETN", event="Q1 earnings")],
+        catalysts_30d=[
+            Catalyst(when=date(2026, 5, 5), ticker="ETN", event="Q1 earnings")
+        ],
         risks_surfaced=[r.id],
     )
     out = render_weekly_review(wr, {r.id: r})
@@ -213,10 +250,6 @@ def test_render_smoke() -> None:
     assert "Earnings: MKL 1Q26" in out
     assert "Recap" in out
 
-
-# ---------------------------------------------------------------------------
-# Watchlist
-# ---------------------------------------------------------------------------
 
 def test_watchlist_entry_buckets_passed() -> None:
     entry = WatchlistEntry(
@@ -277,10 +310,6 @@ def test_render_watchlist_issue() -> None:
     assert "high" in out
 
 
-# ---------------------------------------------------------------------------
-# Scenario
-# ---------------------------------------------------------------------------
-
 def test_scenario_active_and_triggered() -> None:
     s = Scenario(
         id="S-2026-05-001",
@@ -293,7 +322,9 @@ def test_scenario_active_and_triggered() -> None:
     assert s.status == "active"
     assert s.triggered_on is None
 
-    triggered = s.model_copy(update={"status": "triggered", "triggered_on": date(2027, 5, 3)})
+    triggered = s.model_copy(
+        update={"status": "triggered", "triggered_on": date(2027, 5, 3)}
+    )
     assert triggered.status == "triggered"
 
     with pytest.raises(ValidationError):
@@ -311,13 +342,19 @@ def test_scenario_resolved_requires_note() -> None:
         action_description="Re-check thesis.",
     )
     with pytest.raises(ValidationError):
-        s.model_copy(update={
-            "status": "resolved",
-            "triggered_on": date(2027, 1, 1),
-        }).model_validate(s.model_copy(update={
-            "status": "resolved",
-            "triggered_on": date(2027, 1, 1),
-        }).model_dump())
+        s.model_copy(
+            update={
+                "status": "resolved",
+                "triggered_on": date(2027, 1, 1),
+            }
+        ).model_validate(
+            s.model_copy(
+                update={
+                    "status": "resolved",
+                    "triggered_on": date(2027, 1, 1),
+                }
+            ).model_dump()
+        )
 
 
 def test_scenario_roundtrip_markdown(tmp_path: Path) -> None:
@@ -350,10 +387,6 @@ def test_render_scenario_issue() -> None:
     assert "S-2026-05-002" in out
     assert "dca-shift" in out
 
-
-# ---------------------------------------------------------------------------
-# Horizon plan
-# ---------------------------------------------------------------------------
 
 def test_horizon_plan_loads_real_file() -> None:
     p = HorizonPlan.load(REPO / "portfolio" / "horizon_plan.yml")
@@ -390,10 +423,6 @@ def test_render_horizon_review() -> None:
     assert "Phase" in out
     assert "Accumulate" in out or "Evaluate" in out or "Compound" in out
 
-
-# ---------------------------------------------------------------------------
-# Screener
-# ---------------------------------------------------------------------------
 
 def test_score_candidate_all_pass() -> None:
     metrics = {

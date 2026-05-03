@@ -27,16 +27,13 @@ from investment_journal.models.watchlist import QualityBucket, ScreenResult
 @dataclass(frozen=True)
 class MetricThreshold:
     """One numeric check within a quality bucket."""
+
     metric_key: str
     label: str
     check: Callable[[float], bool]
     unit: str
     direction: str  # "above" | "below" | "range" — for display only
 
-
-# ---------------------------------------------------------------------------
-# Default threshold set — "quality-first" for 3-year DCA positions
-# ---------------------------------------------------------------------------
 
 THRESHOLDS: dict[QualityBucket, list[MetricThreshold]] = {
     "cash": [
@@ -50,7 +47,7 @@ THRESHOLDS: dict[QualityBucket, list[MetricThreshold]] = {
         MetricThreshold(
             metric_key="net_cash_ratio",
             label="Net cash / total assets",
-            check=lambda v: v >= -0.30,   # net debt up to 30% of assets is acceptable
+            check=lambda v: v >= -0.30,  # net debt up to 30% of assets is acceptable
             unit="ratio",
             direction="≥ -0.30",
         ),
@@ -149,14 +146,18 @@ def score_candidate(
             elif rule.check(val):
                 lines.append(f"{rule.label}: {val:.1f}{rule.unit} ✓ ({rule.direction})")
             else:
-                lines.append(f"{rule.label}: {val:.1f}{rule.unit} ✗ (threshold: {rule.direction})")
+                lines.append(
+                    f"{rule.label}: {val:.1f}{rule.unit} ✗ (threshold: {rule.direction})"
+                )
                 all_pass = False
 
-        results.append(ScreenResult(
-            bucket=bucket,
-            passed=all_pass,
-            note="; ".join(lines),
-        ))
+        results.append(
+            ScreenResult(
+                bucket=bucket,
+                passed=all_pass,
+                note="; ".join(lines),
+            )
+        )
 
     return results
 

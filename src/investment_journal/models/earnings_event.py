@@ -18,7 +18,8 @@ class EarningsRecap(BaseModel):
     )
     thesis_impact_pending: bool = True
     sources: list[str] = Field(
-        default_factory=list, description="Citation URLs (press release, transcript, 10-Q)."
+        default_factory=list,
+        description="Citation URLs (press release, transcript, 10-Q).",
     )
 
 

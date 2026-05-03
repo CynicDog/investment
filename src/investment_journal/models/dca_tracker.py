@@ -23,14 +23,20 @@ class DCATracker(BaseModel):
     @model_validator(mode="after")
     def _shape(self) -> "DCATracker":
         if self.week_of.weekday() != 0:
-            raise ValueError(f"week_of must be a Monday, got {self.week_of} (weekday={self.week_of.weekday()})")
+            raise ValueError(
+                f"week_of must be a Monday, got {self.week_of} (weekday={self.week_of.weekday()})"
+            )
         for i, t in enumerate(self.ticks):
             expected_name = WEEKDAY_NAMES[i]
             expected_date = self.week_of + timedelta(days=i)
             if t.weekday != expected_name:
-                raise ValueError(f"ticks[{i}].weekday must be '{expected_name}', got '{t.weekday}'")
+                raise ValueError(
+                    f"ticks[{i}].weekday must be '{expected_name}', got '{t.weekday}'"
+                )
             if t.on_date != expected_date:
-                raise ValueError(f"ticks[{i}].on_date must be {expected_date}, got {t.on_date}")
+                raise ValueError(
+                    f"ticks[{i}].on_date must be {expected_date}, got {t.on_date}"
+                )
         return self
 
     @classmethod

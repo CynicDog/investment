@@ -37,9 +37,15 @@ class DCAFill(BaseModel):
     on_date: date
     ticker: str = Field(pattern=r"^[A-Z][A-Z0-9.-]{0,9}$")
     executed: bool
-    target_usd: float = Field(ge=0, description="USD amount the allocation says we'd DCA on this day.")
-    price_usd: Optional[float] = Field(default=None, description="Closing price used for the fill.")
-    shares: Optional[float] = Field(default=None, description="target_usd / price_usd, fractional.")
+    target_usd: float = Field(
+        ge=0, description="USD amount the allocation says we'd DCA on this day."
+    )
+    price_usd: Optional[float] = Field(
+        default=None, description="Closing price used for the fill."
+    )
+    shares: Optional[float] = Field(
+        default=None, description="target_usd / price_usd, fractional."
+    )
 
     @model_validator(mode="after")
     def _coherent(self) -> "DCAFill":
@@ -91,10 +97,14 @@ class DCAHistory(BaseModel):
         return sorted({f.ticker for f in self.fills if f.executed})
 
     def cost_basis(self, ticker: str) -> float:
-        return sum(f.target_usd for f in self.fills if f.ticker == ticker and f.executed)
+        return sum(
+            f.target_usd for f in self.fills if f.ticker == ticker and f.executed
+        )
 
     def shares_held(self, ticker: str) -> float:
-        return sum((f.shares or 0.0) for f in self.fills if f.ticker == ticker and f.executed)
+        return sum(
+            (f.shares or 0.0) for f in self.fills if f.ticker == ticker and f.executed
+        )
 
     def fills_count(self, ticker: str) -> int:
         return sum(1 for f in self.fills if f.ticker == ticker and f.executed)
@@ -112,6 +122,7 @@ class DCAHistory(BaseModel):
 
     def fills_in_week(self, monday: date) -> list[DCAFill]:
         from datetime import timedelta
+
         end = monday + timedelta(days=4)
         return sorted(
             (f for f in self.fills if monday <= f.on_date <= end),

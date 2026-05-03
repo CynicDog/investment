@@ -27,7 +27,7 @@ import sys
 from datetime import date
 from pathlib import Path
 
-from investment_journal.models.scenario import Scenario, TriggerType
+from investment_journal.models.scenario import Scenario
 from investment_journal.render import render_scenario_issue
 
 
@@ -59,16 +59,36 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--title", required=True)
     ap.add_argument(
-        "--trigger-type", required=True, dest="trigger_type",
-        choices=["metric", "thesis-verdict", "watchlist", "time-gate", "dca-shift", "drip"],
+        "--trigger-type",
+        required=True,
+        dest="trigger_type",
+        choices=[
+            "metric",
+            "thesis-verdict",
+            "watchlist",
+            "time-gate",
+            "dca-shift",
+            "drip",
+        ],
     )
-    ap.add_argument("--ticker", default=None, help="Optional. None = portfolio-level scenario.")
-    ap.add_argument("--trigger", required=True, dest="trigger_description",
-                    help="Description of the trigger condition (when this fires).")
-    ap.add_argument("--action", required=True, dest="action_description",
-                    help="What to do when the trigger fires.")
-    ap.add_argument("--context", default="", dest="context",
-                    help="Optional background context.")
+    ap.add_argument(
+        "--ticker", default=None, help="Optional. None = portfolio-level scenario."
+    )
+    ap.add_argument(
+        "--trigger",
+        required=True,
+        dest="trigger_description",
+        help="Description of the trigger condition (when this fires).",
+    )
+    ap.add_argument(
+        "--action",
+        required=True,
+        dest="action_description",
+        help="What to do when the trigger fires.",
+    )
+    ap.add_argument(
+        "--context", default="", dest="context", help="Optional background context."
+    )
     ap.add_argument(
         "--repo",
         default=os.environ.get("GITHUB_REPOSITORY"),
@@ -97,10 +117,16 @@ def main() -> int:
     body_path = path.with_suffix(".body.tmp")
     body_path.write_text(render_scenario_issue(scenario))
     out = gh(
-        "issue", "create", "-R", args.repo,
-        "--title", f"Scenario: {sid} — {args.title}",
-        "--label", "scenario",
-        "--body-file", str(body_path),
+        "issue",
+        "create",
+        "-R",
+        args.repo,
+        "--title",
+        f"Scenario: {sid} — {args.title}",
+        "--label",
+        "scenario",
+        "--body-file",
+        str(body_path),
     )
     body_path.unlink(missing_ok=True)
     issue_url = out.strip().splitlines()[-1] if out else ""
@@ -109,9 +135,16 @@ def main() -> int:
     scenario_with_issue = scenario.model_copy(update={"issue_number": issue_n})
     path.write_text(scenario_with_issue.to_markdown())
 
-    print(json.dumps(
-        {"id": sid, "issue_number": issue_n, "path": str(path.relative_to(REPO_ROOT)), "url": issue_url}
-    ))
+    print(
+        json.dumps(
+            {
+                "id": sid,
+                "issue_number": issue_n,
+                "path": str(path.relative_to(REPO_ROOT)),
+                "url": issue_url,
+            }
+        )
+    )
     return 0
 
 

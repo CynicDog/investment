@@ -42,9 +42,7 @@ EXPECTED_RE = re.compile(
 
 
 def gh(*args: str) -> str:
-    res = subprocess.run(
-        ["gh", *args], capture_output=True, text=True, check=False
-    )
+    res = subprocess.run(["gh", *args], capture_output=True, text=True, check=False)
     if res.returncode != 0:
         sys.stderr.write(f"gh {' '.join(args)} failed:\n{res.stderr}")
         sys.exit(res.returncode)
@@ -55,7 +53,9 @@ def parse_issue(item: dict) -> tuple[EarningsEvent, int] | None:
     title = (item.get("title") or "").strip()
     m = TITLE_RE.match(title)
     if not m:
-        sys.stderr.write(f"skip #{item['number']}: title not earnings-shaped: {title!r}\n")
+        sys.stderr.write(
+            f"skip #{item['number']}: title not earnings-shaped: {title!r}\n"
+        )
         return None
     ticker, quarter = m.group(1), m.group(2)
     body = item.get("body") or ""
@@ -101,10 +101,18 @@ def main() -> int:
         return 2
 
     out = gh(
-        "issue", "list", "-R", args.repo,
-        "--label", "earnings", "--state", "open",
-        "--limit", "100",
-        "--json", "number,title,body",
+        "issue",
+        "list",
+        "-R",
+        args.repo,
+        "--label",
+        "earnings",
+        "--state",
+        "open",
+        "--limit",
+        "100",
+        "--json",
+        "number,title,body",
     )
     items = json.loads(out or "[]")
 
