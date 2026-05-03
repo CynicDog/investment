@@ -10,16 +10,14 @@ config:
 ---
 sankey-beta
 Daily $100,Index,29
-Daily $100,Financials,15
-Daily $100,Healthcare,15
+Daily $100,Financials,18
+Daily $100,Healthcare,18
 Daily $100,Industrials,14
-Daily $100,Insurance,11
-Daily $100,Technology,16
+Daily $100,Technology,21
 Index,VOO,29
-Financials,HLNE,15
-Healthcare,HALO,15
+Financials,HLNE,18
+Healthcare,HALO,18
 Industrials,ETN,14
-Insurance,MKL,11
-Technology,IDCC,8
+Technology,IDCC,13
 Technology,P,8
 ```
