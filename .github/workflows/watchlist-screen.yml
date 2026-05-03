@@ -43,6 +43,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
+          ALPHA_VANTAGE_API_KEY_2: ${{ secrets.ALPHA_VANTAGE_API_KEY_2 }}
           RUN_ID: ${{ github.run_id }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -57,16 +58,16 @@ jobs:
               - open watchlist issues via:
                   gh issue list --label watchlist --state open --json number,title,body
 
-            For each candidate (status: watching or priority):
-              1. Search for current financial metrics from primary sources (10-K, SEC EDGAR, IR).
-              2. Run uv run python with score_candidate() to compute ScreenResult list.
-              3. Update screen_results in portfolio/watchlist.yml for that entry.
-              4. If all 4 buckets pass, upgrade status to 'priority' and comment on the issue.
+            For each candidate (status: watching or priority), fetch metrics and score via:
+              uv run python scripts/screen_candidate.py --ticker <TICKER>
+            This calls Alpha Vantage (ALPHA_VANTAGE_API_KEY_2 is set in env) and prints JSON.
+            Parse the JSON, update screen_results in portfolio/watchlist.yml for that entry.
+            If all 4 buckets pass, upgrade status to 'priority' and comment on the issue.
 
             After all candidates are processed, commit portfolio/watchlist.yml.
           claude_args: |
             --model claude-sonnet-4-6
-            --allowedTools "Read,Glob,Grep,Write,Bash(uv run python:*),Bash(uv run:*),Bash(cat:*),Bash(ls:*),Bash(git add:*),Bash(git commit:*),Bash(git pull:*),Bash(git push:*),Bash(git config:*),Bash(gh issue list:*),Bash(gh issue view:*),Bash(gh issue comment:*),WebSearch,WebFetch"
+            --allowedTools "Read,Glob,Grep,Write,Bash(uv run python:*),Bash(uv run:*),Bash(cat:*),Bash(ls:*),Bash(git add:*),Bash(git commit:*),Bash(git pull:*),Bash(git push:*),Bash(git config:*),Bash(gh issue list:*),Bash(gh issue view:*),Bash(gh issue comment:*)"
 
       - name: Skip message
         if: steps.check.outputs.count == '0'
