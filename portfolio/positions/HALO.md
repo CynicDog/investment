@@ -1,13 +1,13 @@
 # HALO — Halozyme Therapeutics
 
-> Last reviewed: 2026-04-26 &nbsp;•&nbsp; Sector: Healthcare / Biotech &nbsp;•&nbsp; Target: 16% &nbsp;•&nbsp; Daily DCA: $16
+> Last reviewed: 2026-05-03 &nbsp;•&nbsp; Sector: Healthcare / Biotech &nbsp;•&nbsp; Target: 18% &nbsp;•&nbsp; Daily DCA: $18
 
 ## At a glance
 
 | Metric | Value |
 |---|---|
-| Target allocation | 16% |
-| Daily DCA | $16 |
+| Target allocation | 18% |
+| Daily DCA | $18 |
 
 ## Thesis
 

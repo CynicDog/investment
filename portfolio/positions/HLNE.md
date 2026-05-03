@@ -1,17 +1,17 @@
 # HLNE — Hamilton Lane
 
-> Last reviewed: 2026-04-26 &nbsp;•&nbsp; Sector: Financials / Asset management &nbsp;•&nbsp; Target: 16% &nbsp;•&nbsp; Daily DCA: $16
+> Last reviewed: 2026-05-03 &nbsp;•&nbsp; Sector: Financials / Asset management &nbsp;•&nbsp; Target: 18% &nbsp;•&nbsp; Daily DCA: $18
 
 ## At a glance
 
 | Metric | Value |
 |---|---|
-| Target allocation | 16% |
-| Daily DCA | $16 |
+| Target allocation | 18% |
+| Daily DCA | $18 |
 
 ## Thesis
 
-Top-tier single-name pick — tied with HALO and ETN at 16% as the next-largest weights after VOO. Private-markets advisor / fund-of-funds platform riding a real secular tailwind: institutional and HNW capital continues shifting from public equities into private equity, private credit, infrastructure, and real assets. HLNE earns recurring management/advisory fees on AUM plus carry, with operating leverage as scale builds. Capital-light, founder-aligned, and trading at a fair (not stretched) multiple given AUM growth visibility.
+Top-tier single-name pick — tied with HALO at 18% as the highest-conviction names after VOO. Private-markets advisor / fund-of-funds platform riding a real secular tailwind: institutional and HNW capital continues shifting from public equities into private equity, private credit, infrastructure, and real assets. HLNE earns recurring management/advisory fees on AUM plus carry, with operating leverage as scale builds. Capital-light, founder-aligned, and trading at a fair (not stretched) multiple given AUM growth visibility.
 
 ## Bull case
 

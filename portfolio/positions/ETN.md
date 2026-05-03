@@ -1,13 +1,13 @@
 # ETN — Eaton Corp
 
-> Last reviewed: 2026-04-26 &nbsp;•&nbsp; Sector: Industrials / Electrical &nbsp;•&nbsp; Target: 16% &nbsp;•&nbsp; Daily DCA: $16
+> Last reviewed: 2026-05-03 &nbsp;•&nbsp; Sector: Industrials / Electrical &nbsp;•&nbsp; Target: 14% &nbsp;•&nbsp; Daily DCA: $14
 
 ## At a glance
 
 | Metric | Value |
 |---|---|
-| Target allocation | 16% |
-| Daily DCA | $16 |
+| Target allocation | 14% |
+| Daily DCA | $14 |
 
 ## Thesis
 
