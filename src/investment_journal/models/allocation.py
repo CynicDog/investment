@@ -1,7 +1,7 @@
 """Allocation: target weights + per-position daily DCA $ as configured at the broker."""
 
 from datetime import date
-from typing import Literal
+from typing import Literal, Optional
 
 import yaml
 from pydantic import BaseModel, Field, model_validator
@@ -19,6 +19,14 @@ class Position(BaseModel):
     target_pct: float = Field(gt=0, le=100)
     dca_per_day_usd: float = Field(ge=0)
     role: str = Field(min_length=1)
+    dividend_yield_pct: Optional[float] = Field(
+        default=None,
+        description="Trailing 12-month dividend yield as a percentage (e.g. 1.5 for 1.5%).",
+    )
+    div_frequency: Optional[Literal["monthly", "quarterly", "semi-annual", "annual"]] = Field(
+        default=None,
+        description="Payment frequency. None = no dividend.",
+    )
 
 
 class ClosedPosition(BaseModel):

@@ -1,0 +1,66 @@
+# Horizon plan — 3-year DCA journey roadmap.
+#
+# User-maintained. Automation reads but never writes unless explicitly asked.
+# Mark decision_gates answered=true + add answer_note when the annual
+# horizon-review issue is completed.
+#
+# Validated by: investment_journal.models.horizon.HorizonPlan
+
+horizon_version: 1
+started_on: 2026-05-03
+total_dca_per_day_usd: 100
+
+phases:
+  - phase: 1
+    name: Accumulate
+    start: 2026-05-03
+    end: 2027-05-03
+    objective: |
+      Build positions per allocation plan v4. No discretionary changes unless a thesis
+      breaks (thesis-review verdict 'no') or a high-severity risk triggers a scenario.
+      Focus: consistency of DCA execution, thesis monitoring, and watchlist research.
+    decision_gates:
+      - question: All 6 positions still hold thesis at the 12-month mark?
+        answered: false
+      - question: Any watchlist candidate passed all 4 quality buckets and is ready to add?
+        answered: false
+      - question: DCA budget increase warranted based on income and conviction?
+        answered: false
+      - question: Speculative position P showing evidence of AI data infra execution?
+        answered: false
+
+  - phase: 2
+    name: Evaluate & Optimize
+    start: 2027-05-03
+    end: 2028-05-03
+    objective: |
+      Review each position's 2-year performance vs. original thesis. Allow 1–2 substitutions
+      from watchlist if quality screens pass and thesis is stronger than incumbent. Consider
+      DCA reweight toward highest-conviction positions. Evaluate P for exit if thesis unproven.
+    decision_gates:
+      - question: Which positions underperformed thesis materially over 2 years?
+        answered: false
+      - question: Which watchlist candidates crossed all quality thresholds?
+        answered: false
+      - question: Does DCA weight distribution reflect current conviction ranking?
+        answered: false
+      - question: Has HLNE/HALO private-markets and royalty thesis expanded as expected?
+        answered: false
+
+  - phase: 3
+    name: Compound or Transition
+    start: 2028-05-03
+    end: 2029-05-03
+    objective: |
+      Decide: continue compounding (extend horizon by 2 more years), shift toward income
+      mode (increase dividend-paying positions, begin formal DRIP tracking), or begin
+      partial exits on positions that have fully played out.
+    decision_gates:
+      - question: Total deployed capital vs. original 3-year DCA target ($78k at $100/day)?
+        answered: false
+      - question: Dividend income run-rate — has it reached a level worth formal DRIP tracking?
+        answered: false
+      - question: Has the portfolio generated outsized returns in any single position warranting trim?
+        answered: false
+      - question: Extend horizon or begin transition to income/distribution mode?
+        answered: false

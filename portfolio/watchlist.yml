@@ -1,0 +1,13 @@
+# Watchlist — quality-screened candidates for potential portfolio addition.
+#
+# User-maintained. Add a candidate here, then run the monthly watchlist-screen
+# workflow (or ask Claude) to populate screen_results based on latest filings.
+#
+# Validated by: investment_journal.models.watchlist.Watchlist
+# Screen thresholds: investment_journal.models.screener.THRESHOLDS
+#
+# Status values: watching | priority | parked | added-to-portfolio
+# Conviction: high | medium | low
+# Quality buckets: cash | finance | stability | profitability
+
+watchlist: []

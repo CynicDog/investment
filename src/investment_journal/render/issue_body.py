@@ -2,9 +2,12 @@
 
 from investment_journal.models.dca_tracker import DCATracker
 from investment_journal.models.earnings_event import EarningsEvent
+from investment_journal.models.horizon import HorizonPlan
 from investment_journal.models.risk import Risk
+from investment_journal.models.scenario import Scenario
 from investment_journal.models.thesis_review import ThesisReview
 from investment_journal.models.tone import DISCLAIMER
+from investment_journal.models.watchlist import WatchlistEntry
 from investment_journal.models.weekly_review import WeeklyReview
 
 
@@ -292,4 +295,160 @@ def render_dca_tracker(t: DCATracker, allocation_table: str | None = None) -> st
     if allocation_table:
         lines += ["---", "", "Daily target split (per `portfolio/allocation.yml`):", "", allocation_table, ""]
     lines += [DISCLAIMER]
+    return "\n".join(lines)
+
+
+def render_watchlist_issue(entry: WatchlistEntry) -> str:
+    """Body of the GitHub issue tracking a single watchlist candidate."""
+    passed = entry.buckets_passed
+    buckets = ["cash", "finance", "stability", "profitability"]
+    badges = " ".join(
+        f"**{b}** ✓" if b in passed else f"~~{b}~~"
+        for b in buckets
+    )
+    lines = [
+        f"# Watchlist: {entry.ticker} — {entry.name}",
+        "",
+        f"_Sector:_ {entry.sector} &nbsp;•&nbsp; "
+        f"_Added:_ {entry.added_on.isoformat()} &nbsp;•&nbsp; "
+        f"_Conviction:_ **{entry.conviction}** &nbsp;•&nbsp; "
+        f"_Status:_ **{entry.status}**",
+        "",
+        f"Quality buckets: {badges}",
+        "",
+        "## Thesis note",
+        "",
+        entry.thesis_note.strip(),
+        "",
+        "## Quality screen",
+        "",
+        "| Bucket | Pass | Notes |",
+        "|---|---|---|",
+    ]
+    for r in entry.screen_results:
+        icon = "✓" if r.passed else "✗"
+        note = (r.note or "").replace("|", "\\|")
+        lines.append(f"| {r.bucket} | {icon} | {note} |")
+    if not entry.screen_results:
+        lines.append("| _(not yet screened)_ | — | — |")
+
+    lines += [
+        "",
+        "## Decision checklist",
+        "",
+        _checkbox("Initial screen complete (all 4 buckets evaluated)"),
+        _checkbox("Thesis note written with primary source citations"),
+        _checkbox("All quality buckets pass"),
+        _checkbox("Added to `portfolio/watchlist.yml`"),
+        _checkbox("Scenario filed: watchlist trigger → add to portfolio"),
+        "",
+        "---",
+        f"Source of truth: [`portfolio/watchlist.yml`](../blob/main/portfolio/watchlist.yml) — `{entry.ticker}` entry.",
+        "",
+        DISCLAIMER,
+    ]
+    return "\n".join(lines)
+
+
+def render_scenario_issue(scenario: Scenario) -> str:
+    """Body of the GitHub issue tracking a single scenario."""
+    lines = [
+        f"# {scenario.id} — {scenario.title}",
+        "",
+        f"_Type:_ **{scenario.trigger_type}** &nbsp;•&nbsp; "
+        f"_Ticker:_ **{scenario.ticker or 'portfolio-level'}** &nbsp;•&nbsp; "
+        f"_Status:_ **{scenario.status}**"
+        + (f" (triggered {scenario.triggered_on.isoformat()})" if scenario.triggered_on else ""),
+        "",
+        "## Trigger",
+        "",
+        scenario.trigger_description.strip(),
+        "",
+        "## Action",
+        "",
+        scenario.action_description.strip(),
+        "",
+    ]
+    if scenario.context:
+        lines += ["## Context", "", scenario.context.strip(), ""]
+    if scenario.status == "resolved":
+        lines += [
+            "## Resolution",
+            "",
+            f"_Triggered:_ {scenario.triggered_on.isoformat() if scenario.triggered_on else '—'}",
+            "",
+            scenario.resolution_note or "",
+            "",
+        ]
+    lines += [
+        "---",
+        f"Source of truth: [`portfolio/scenarios/{scenario.id}.md`](../blob/main/portfolio/scenarios/{scenario.id}.md). Edit there, not here.",
+        "",
+        DISCLAIMER,
+    ]
+    return "\n".join(lines)
+
+
+def render_horizon_review(plan: HorizonPlan, scenarios: list[Scenario] | None = None) -> str:
+    """Body of the annual horizon review issue for the current phase."""
+    scenarios = scenarios or []
+    phase = plan.current_phase
+    active_scenarios = [s for s in scenarios if s.status == "active"]
+    triggered_scenarios = [s for s in scenarios if s.status == "triggered"]
+
+    lines = [
+        f"# Horizon review — Phase {phase.phase}: {phase.name}",
+        "",
+        f"_Horizon version:_ {plan.horizon_version} &nbsp;•&nbsp; "
+        f"_Started:_ {plan.started_on.isoformat()} &nbsp;•&nbsp; "
+        f"_Phase window:_ {phase.start.isoformat()} → {phase.end.isoformat()} &nbsp;•&nbsp; "
+        f"_Daily DCA:_ ${plan.total_dca_per_day_usd:.0f}",
+        "",
+        "## Phase objective",
+        "",
+        phase.objective.strip(),
+        "",
+        "## Decision gates",
+        "",
+    ]
+    for gate in phase.decision_gates:
+        icon = "✓" if gate.answered else "○"
+        lines.append(f"### {icon} {gate.question}")
+        if gate.answered and gate.answer_note:
+            lines += ["", gate.answer_note.strip(), ""]
+        else:
+            lines += ["", "_Not yet answered._", ""]
+
+    lines += ["## Active scenarios", ""]
+    if triggered_scenarios:
+        lines.append("**Triggered (action required):**")
+        lines.append("")
+        for s in triggered_scenarios:
+            ref = f"#{s.issue_number}" if s.issue_number else s.id
+            lines.append(f"- 🔴 {ref} — {s.title} (`{s.trigger_type}`)")
+        lines.append("")
+    if active_scenarios:
+        lines.append("**Monitoring:**")
+        lines.append("")
+        for s in active_scenarios:
+            ref = f"#{s.issue_number}" if s.issue_number else s.id
+            ticker = f"[{s.ticker}] " if s.ticker else ""
+            lines.append(f"- {ref} — {ticker}{s.title} (`{s.trigger_type}`)")
+        lines.append("")
+    if not active_scenarios and not triggered_scenarios:
+        lines.append("_No active scenarios._")
+        lines.append("")
+
+    lines += [
+        "## Review checklist",
+        "",
+        _checkbox("Decision gates answered above"),
+        _checkbox("Triggered scenarios actioned"),
+        _checkbox("Watchlist reviewed for ready candidates"),
+        _checkbox("Allocation weights reflect current conviction"),
+        _checkbox("`portfolio/horizon_plan.yml` updated (gates marked answered)"),
+        "",
+        "---",
+        DISCLAIMER,
+    ]
     return "\n".join(lines)

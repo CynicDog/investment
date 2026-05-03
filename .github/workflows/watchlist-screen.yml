@@ -1,0 +1,73 @@
+name: Watchlist quality screen
+
+on:
+  schedule:
+    # 1st of every month at 23:00 UTC
+    - cron: "0 23 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write   # commits updated watchlist.yml
+  issues: write
+  id-token: write
+  actions: read
+
+jobs:
+  screen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install project
+        run: uv sync --frozen
+
+      - name: Check watchlist has candidates
+        id: check
+        run: |
+          count=$(uv run python -c "
+          from investment_journal import Watchlist
+          w = Watchlist.load('portfolio/watchlist.yml')
+          active = [e for e in w.watchlist if e.status in ('watching','priority')]
+          print(len(active))
+          ")
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+
+      - name: Run Claude watchlist screen
+        if: steps.check.outputs.count != '0'
+        uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            You are running the monthly watchlist quality screen for ${{ github.repository }}.
+            Read `docs/PROMPTS.md` (anchor `## watchlist-screen`) and follow it verbatim.
+            The DSL contract is documented in `CLAUDE.md` and codified under
+            `src/investment_journal/`.
+
+            Inputs:
+              - portfolio/watchlist.yml
+              - open watchlist issues via:
+                  gh issue list --label watchlist --state open --json number,title,body
+
+            For each candidate (status: watching or priority):
+              1. Search for current financial metrics from primary sources (10-K, SEC EDGAR, IR).
+              2. Run uv run python with score_candidate() to compute ScreenResult list.
+              3. Update screen_results in portfolio/watchlist.yml for that entry.
+              4. If all 4 buckets pass, upgrade status to 'priority' and comment on the issue.
+
+            After all candidates are processed, commit portfolio/watchlist.yml.
+          claude_args: |
+            --model claude-sonnet-4-6
+            --allowedTools "Read,Glob,Grep,Write,Bash(uv run python:*),Bash(uv run:*),Bash(cat:*),Bash(ls:*),Bash(git add:*),Bash(git commit:*),Bash(git pull:*),Bash(git push:*),Bash(git config:*),Bash(gh issue list:*),Bash(gh issue view:*),Bash(gh issue comment:*),WebSearch,WebFetch"
+
+      - name: Skip message
+        if: steps.check.outputs.count == '0'
+        run: echo "Watchlist is empty — nothing to screen."

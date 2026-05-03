@@ -305,6 +305,159 @@ Steps:
 
 ---
 
+## watchlist-screen
+
+Monthly quality screen of all `watching` and `priority` candidates in `portfolio/watchlist.yml`.
+Uses the quantitative threshold set in `investment_journal.models.screener.THRESHOLDS`.
+
+The goal is to answer: **does this candidate pass the quality bar?** If all four buckets pass,
+flag it as `ready` — human still decides whether to add to portfolio.
+
+### Inputs
+
+```bash
+# Read the current watchlist
+cat portfolio/watchlist.yml
+# Read current open watchlist issues (to comment on if a candidate upgrades)
+gh issue list --label watchlist --state open --json number,title,body
+# See what metric keys the screener needs
+uv run python -c "from investment_journal import metric_keys; print(metric_keys())"
+```
+
+### For each candidate (status: watching or priority)
+
+1. **Fetch metrics** via WebSearch/WebFetch:
+   - Source priority: company 10-K (SEC EDGAR) > IR press release > earnings call transcript
+   - Target metrics (from `metric_keys()`):
+     - `fcf_yield_pct` — trailing FCF / market cap × 100
+     - `net_cash_ratio` — (cash − total debt) / total assets
+     - `debt_to_equity` — total debt / shareholders equity
+     - `interest_coverage` — EBIT / interest expense
+     - `current_ratio` — current assets / current liabilities
+     - `revenue_cagr_3y_pct` — 3-year revenue CAGR as %
+     - `earnings_beat_rate_pct` — % of last 8 quarters where EPS beat consensus
+     - `gross_margin_pct` — gross profit / revenue × 100
+     - `roic_pct` — NOPAT / invested capital × 100 (TTM)
+     - `roe_pct` — net income / average shareholders equity × 100 (TTM)
+   - If a metric cannot be found in a primary source, leave it `null` — the screener will flag it
+     as "data missing" and mark the bucket failed.
+
+2. **Run the screener**:
+   ```bash
+   uv run python - <<'PY'
+   from investment_journal import score_candidate
+   import json
+   metrics = {
+       "fcf_yield_pct": <value_or_None>,
+       "net_cash_ratio": <value_or_None>,
+       "debt_to_equity": <value_or_None>,
+       "interest_coverage": <value_or_None>,
+       "current_ratio": <value_or_None>,
+       "revenue_cagr_3y_pct": <value_or_None>,
+       "earnings_beat_rate_pct": <value_or_None>,
+       "gross_margin_pct": <value_or_None>,
+       "roic_pct": <value_or_None>,
+       "roe_pct": <value_or_None>,
+   }
+   results = score_candidate(metrics)
+   for r in results:
+       print(json.dumps({"bucket": r.bucket, "passed": r.passed, "note": r.note}))
+   PY
+   ```
+
+3. **Update `portfolio/watchlist.yml`** — replace the `screen_results` list for this entry with
+   the output above. Preserve all other fields. Also update the entry's `status` to `priority`
+   if all 4 buckets pass and it was previously `watching`.
+
+4. **If all 4 buckets now pass** and the candidate has an open `watchlist` issue, post a comment:
+   ```
+   Quality screen updated (YYYY-MM-DD): all 4 buckets now pass.
+   Metrics: <bullet per bucket with note>.
+   Ready for portfolio consideration.
+   ```
+
+### Commit
+
+After updating all candidates:
+```bash
+git add portfolio/watchlist.yml
+git commit -m "chore(watchlist): refresh quality screen (run #${RUN_ID})"
+git push
+```
+
+### Constraints
+
+- Do NOT change conviction or status to `added-to-portfolio`. That is a human decision.
+- If no primary-source metric data is available for a candidate, skip that candidate for this run
+  and note it in stdout (do not write half-screened results).
+- Do NOT screen candidates with status `parked` or `added-to-portfolio`.
+- If `watchlist.yml` is empty, print "watchlist is empty — nothing to screen" and exit cleanly.
+
+---
+
+## horizon-review
+
+Annual phase gate review. Reads the current phase from `portfolio/horizon_plan.yml`,
+loads all scenarios, and opens a `horizon-review` issue.
+
+### Inputs
+
+```bash
+# Read the horizon plan
+cat portfolio/horizon_plan.yml
+# Load all scenarios
+ls portfolio/scenarios/S-*.md 2>/dev/null || echo "(none yet)"
+# Read open watchlist issues
+gh issue list --label watchlist --state open --json number,title
+# Read open scenario issues
+gh issue list --label scenario --state open --json number,title,body
+```
+
+### Compose the review issue
+
+Use the DSL:
+
+```bash
+uv run python - <<'PY' > /tmp/horizon_body.md
+from investment_journal import HorizonPlan, Scenario
+from investment_journal.render import render_horizon_review
+from pathlib import Path
+
+plan = HorizonPlan.load("portfolio/horizon_plan.yml")
+scenarios = Scenario.load_all(Path("portfolio/scenarios"))
+print(render_horizon_review(plan, scenarios))
+PY
+gh issue create \
+  --title "Horizon review — Phase $(uv run python -c "from investment_journal import HorizonPlan; p=HorizonPlan.load('portfolio/horizon_plan.yml'); print(p.current_phase.phase)"): $(uv run python -c "from investment_journal import HorizonPlan; p=HorizonPlan.load('portfolio/horizon_plan.yml'); print(p.current_phase.name)")" \
+  --label horizon-review \
+  --body-file /tmp/horizon_body.md
+```
+
+### Decision gate analysis
+
+For each unanswered gate in the current phase, provide a brief analysis (2–4 sentences)
+based on reading the available dossiers, scenarios, and recent weekly reviews. Add the
+analysis as a comment on the newly created issue immediately after opening it.
+
+Read the last 4 weekly reviews for context:
+```bash
+gh issue list --label weekly-review --state closed --limit 4 --json number,title,body,closedAt
+```
+
+### Constraints
+
+- Do NOT mark any decision gate as `answered` in `horizon_plan.yml`. That is a human decision
+  after reading the issue.
+- Do NOT close or resolve any scenario. That is a human decision.
+- Do NOT suggest specific buy/sell/hold actions. Surface data; judgment belongs to the user.
+- One issue per annual cycle. Check for existing open `horizon-review` issues first:
+  ```bash
+  gh issue list --label horizon-review --state open --json number,title
+  ```
+  If one already exists, add a comment to it instead of opening a new one.
+
+---
+
 ## Style guide for any issue or comment you author
 
 - Headlines: `## H2` for sections, `### H3` for sub.

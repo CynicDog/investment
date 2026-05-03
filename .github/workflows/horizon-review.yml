@@ -1,0 +1,61 @@
+name: Annual horizon review
+
+on:
+  schedule:
+    # May 3rd at 22:00 UTC — anniversary of horizon plan started_on (2026-05-03)
+    - cron: "0 22 3 5 *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  id-token: write
+  actions: read
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install project
+        run: uv sync --frozen
+
+      - name: Run Claude horizon review
+        uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            You are running the annual horizon review for ${{ github.repository }}.
+            Read `docs/PROMPTS.md` (anchor `## horizon-review`) and follow it verbatim.
+            The DSL contract is documented in `CLAUDE.md` and codified under
+            `src/investment_journal/`.
+
+            Inputs to read:
+              - portfolio/horizon_plan.yml
+              - portfolio/scenarios/S-*.md (all scenario files)
+              - portfolio/allocation.yml
+              - open scenario issues:
+                  gh issue list --label scenario --state open --json number,title,body
+              - open watchlist issues:
+                  gh issue list --label watchlist --state open --json number,title
+              - last 4 weekly reviews:
+                  gh issue list --label weekly-review --state closed --limit 4 --json number,title,body,closedAt
+
+            Steps:
+              1. Check for an already-open horizon-review issue. If found, add a comment; do not open a new one.
+              2. Otherwise, build the issue body via render_horizon_review() and open it.
+              3. Post a follow-up comment with a brief analysis of each unanswered decision gate.
+
+            Do NOT mark decision gates as answered or resolve scenarios. Those are human actions.
+          claude_args: |
+            --model claude-sonnet-4-6
+            --allowedTools "Read,Glob,Grep,Write,Bash(uv run python:*),Bash(uv run:*),Bash(cat:*),Bash(ls:*),Bash(gh issue list:*),Bash(gh issue view:*),Bash(gh issue create:*),Bash(gh issue comment:*),WebSearch,WebFetch"

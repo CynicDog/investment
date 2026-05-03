@@ -21,6 +21,17 @@ from investment_journal.models.earnings_event import EarningsEvent, EarningsReca
 from investment_journal.models.dca_tracker import DCATracker, DCATick
 from investment_journal.models.dca_history import DCAFill, DCAHistory, Mark
 from investment_journal.models.tone import DISCLAIMER, TONE_RULES, Tone
+from investment_journal.models.watchlist import (
+    Conviction,
+    QualityBucket,
+    ScreenResult,
+    Watchlist,
+    WatchlistEntry,
+    WatchlistStatus,
+)
+from investment_journal.models.scenario import Scenario, ScenarioStatus, TriggerType
+from investment_journal.models.horizon import DecisionGate, HorizonPhase, HorizonPlan
+from investment_journal.models.screener import THRESHOLDS, score_candidate, metric_keys
 
 __all__ = [
     "Allocation",
@@ -47,4 +58,23 @@ __all__ = [
     "Tone",
     "TONE_RULES",
     "DISCLAIMER",
+    # Watchlist
+    "Conviction",
+    "QualityBucket",
+    "ScreenResult",
+    "Watchlist",
+    "WatchlistEntry",
+    "WatchlistStatus",
+    # Scenario
+    "Scenario",
+    "ScenarioStatus",
+    "TriggerType",
+    # Horizon
+    "DecisionGate",
+    "HorizonPhase",
+    "HorizonPlan",
+    # Screener
+    "THRESHOLDS",
+    "score_candidate",
+    "metric_keys",
 ]
