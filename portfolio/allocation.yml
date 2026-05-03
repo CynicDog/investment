@@ -1,10 +1,9 @@
-plan_version: 3
-adopted: 2026-04-27
+plan_version: 4
+adopted: 2026-05-03
 notes: |
-  Revised 7-position allocation. P (Everpure, fka Pure Storage — ticker changed to P
-  after rebrand) added as a speculative AI data infrastructure play. SDGR (Schrödinger)
-  considered but dropped; its 7% redistributed evenly (+1pp each). HLNE and HALO remain
-  highest conviction. VOO stays the anchor at 29%. MKL retained as defensive ballast.
+  6-position allocation after MKL (Markel Group) position cleared on 2026-05-03.
+  MKL's $11/day DCA redistributed: HLNE +$3 (→$18), HALO +$3 (→$18), IDCC +$5 (→$13).
+  VOO, ETN, and P unchanged. HLNE and HALO remain highest conviction.
 
 dca:
   cadence: daily-weekday      # 5 fills per week
@@ -21,15 +20,15 @@ positions:
   - ticker: HLNE
     name: Hamilton Lane
     sector: Financials / Asset management
-    target_pct: 15
-    dca_per_day_usd: 15
+    target_pct: 18
+    dca_per_day_usd: 18
     role: Private markets growth (highest conviction)
 
   - ticker: HALO
     name: Halozyme Therapeutics
     sector: Healthcare / Biotech
-    target_pct: 15
-    dca_per_day_usd: 15
+    target_pct: 18
+    dca_per_day_usd: 18
     role: Healthcare royalties (highest conviction)
 
   - ticker: ETN
@@ -39,18 +38,11 @@ positions:
     dca_per_day_usd: 14
     role: AI power infrastructure
 
-  - ticker: MKL
-    name: Markel Group
-    sector: Insurance / Holding company
-    target_pct: 11
-    dca_per_day_usd: 11
-    role: Defensive ballast
-
   - ticker: IDCC
     name: InterDigital
     sector: Technology / IP licensing
-    target_pct: 8
-    dca_per_day_usd: 8
+    target_pct: 13
+    dca_per_day_usd: 13
     role: Patent licensing IP
 
   - ticker: P
@@ -59,3 +51,12 @@ positions:
     target_pct: 8
     dca_per_day_usd: 8
     role: "Speculation: AI data infra pivot"
+
+closed_positions:
+  - ticker: MKL
+    name: Markel Group
+    closed_on: 2026-05-03
+    final_pct: 11
+    final_dca_usd: 11
+    reason: >-
+      Position cleared; DCA redistributed to HLNE (+$3), HALO (+$3), IDCC (+$5).

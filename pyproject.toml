@@ -21,3 +21,6 @@ build-backend = "uv_build"
 [tool.uv.build-backend]
 module-root = "src"
 module-name = "investment_journal"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]

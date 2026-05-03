@@ -1,13 +1,13 @@
 # MKL — Markel Group
 
-> Last reviewed: 2026-04-26 &nbsp;•&nbsp; Sector: Insurance / Holding company &nbsp;•&nbsp; Target: 12% &nbsp;•&nbsp; Daily DCA: $12
+> Status: CLOSED &nbsp;•&nbsp; Closed: 2026-05-03 &nbsp;•&nbsp; Sector: Insurance / Holding company &nbsp;•&nbsp; Last reviewed: 2026-04-26
 
 ## At a glance
 
 | Metric | Value |
 |---|---|
-| Target allocation | 12% |
-| Daily DCA | $12 |
+| Target allocation | closed |
+| Daily DCA | $0 |
 
 ## Thesis
 

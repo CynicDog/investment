@@ -3,12 +3,15 @@
 The DSL validates structure (header line is well-formed, required H2 sections are
 present) without parsing the prose itself. The user's thesis writing stays as
 plain markdown — easier to read in editors, less brittle than yaml round-trips.
+
+Closed positions use a different header format:
+  > Status: CLOSED &nbsp;•&nbsp; Closed: YYYY-MM-DD &nbsp;•&nbsp; Sector: ... &nbsp;•&nbsp; Last reviewed: YYYY-MM-DD
 """
 
 from datetime import date
 from pathlib import Path
 import re
-from typing import ClassVar
+from typing import ClassVar, Literal, Optional
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -18,6 +21,13 @@ HEADER_LINE_RE = re.compile(
     r"\s*&nbsp;•&nbsp;\s*Sector:\s*(?P<sector>[^•]+?)"
     r"\s*&nbsp;•&nbsp;\s*Target:\s*(?P<target>\d+(?:\.\d+)?)%"
     r"\s*&nbsp;•&nbsp;\s*Daily DCA:\s*\$(?P<dca>\d+(?:\.\d+)?)\s*$"
+)
+
+CLOSED_HEADER_LINE_RE = re.compile(
+    r"^>\s*Status:\s*CLOSED"
+    r"\s*&nbsp;•&nbsp;\s*Closed:\s*(?P<closed>\d{4}-\d{2}-\d{2})"
+    r"\s*&nbsp;•&nbsp;\s*Sector:\s*(?P<sector>[^•]+?)"
+    r"\s*&nbsp;•&nbsp;\s*Last reviewed:\s*(?P<reviewed>\d{4}-\d{2}-\d{2})\s*$"
 )
 
 
@@ -39,6 +49,7 @@ class Dossier(BaseModel):
 
     Construct via `Dossier.from_file(path)`. The `body` field holds the raw
     markdown so renderers / Claude can read sections without re-rendering.
+    Closed positions have `status='closed'`, `closed_on` set, and `target_pct=0`.
     """
 
     REQUIRED_SECTIONS: ClassVar[tuple[str, ...]] = REQUIRED_SECTIONS
@@ -47,8 +58,10 @@ class Dossier(BaseModel):
     name: str
     last_reviewed: date
     sector: str
-    target_pct: float = Field(gt=0, le=100)
+    target_pct: float = Field(ge=0, le=100)
     dca_per_day_usd: float = Field(ge=0)
+    status: Literal["active", "closed"] = "active"
+    closed_on: Optional[date] = None
     sections: list[str]
     body: str
 
@@ -73,27 +86,45 @@ class Dossier(BaseModel):
             raise ValueError(f"{path}: H1 must match '# TICKER — Name', got: {h1!r}")
         ticker, name = m.group(1), m.group(2).strip()
 
-        # Header blockquote
-        hdr = next((line for line in lines if HEADER_LINE_RE.match(line)), None)
-        if not hdr:
-            raise ValueError(
-                f"{path}: header line missing or malformed; expected\n"
-                f"  > Last reviewed: YYYY-MM-DD &nbsp;•&nbsp; Sector: ... &nbsp;•&nbsp; Target: X% &nbsp;•&nbsp; Daily DCA: $X"
+        sections = [line[3:].strip() for line in lines if line.startswith("## ")]
+
+        # Try active header first, then closed header
+        active_hdr = next((line for line in lines if HEADER_LINE_RE.match(line)), None)
+        if active_hdr:
+            hm = HEADER_LINE_RE.match(active_hdr)
+            assert hm
+            return cls(
+                ticker=ticker,
+                name=name,
+                last_reviewed=date.fromisoformat(hm.group("reviewed")),
+                sector=hm.group("sector").strip(),
+                target_pct=float(hm.group("target")),
+                dca_per_day_usd=float(hm.group("dca")),
+                status="active",
+                closed_on=None,
+                sections=sections,
+                body=text,
             )
-        hm = HEADER_LINE_RE.match(hdr)
-        assert hm  # for type-checkers; we just confirmed it matches above
 
-        sections = [
-            line[3:].strip() for line in lines if line.startswith("## ")
-        ]
+        closed_hdr = next((line for line in lines if CLOSED_HEADER_LINE_RE.match(line)), None)
+        if closed_hdr:
+            cm = CLOSED_HEADER_LINE_RE.match(closed_hdr)
+            assert cm
+            return cls(
+                ticker=ticker,
+                name=name,
+                last_reviewed=date.fromisoformat(cm.group("reviewed")),
+                sector=cm.group("sector").strip(),
+                target_pct=0.0,
+                dca_per_day_usd=0.0,
+                status="closed",
+                closed_on=date.fromisoformat(cm.group("closed")),
+                sections=sections,
+                body=text,
+            )
 
-        return cls(
-            ticker=ticker,
-            name=name,
-            last_reviewed=date.fromisoformat(hm.group("reviewed")),
-            sector=hm.group("sector").strip(),
-            target_pct=float(hm.group("target")),
-            dca_per_day_usd=float(hm.group("dca")),
-            sections=sections,
-            body=text,
+        raise ValueError(
+            f"{path}: header line missing or malformed; expected one of:\n"
+            f"  > Last reviewed: YYYY-MM-DD &nbsp;•&nbsp; Sector: ... &nbsp;•&nbsp; Target: X% &nbsp;•&nbsp; Daily DCA: $X\n"
+            f"  > Status: CLOSED &nbsp;•&nbsp; Closed: YYYY-MM-DD &nbsp;•&nbsp; Sector: ... &nbsp;•&nbsp; Last reviewed: YYYY-MM-DD"
         )

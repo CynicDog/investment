@@ -21,12 +21,22 @@ class Position(BaseModel):
     role: str = Field(min_length=1)
 
 
+class ClosedPosition(BaseModel):
+    ticker: str = Field(pattern=r"^[A-Z][A-Z0-9.-]{0,9}$")
+    name: str = Field(min_length=1)
+    closed_on: date
+    final_pct: float = Field(ge=0, le=100)
+    final_dca_usd: float = Field(ge=0)
+    reason: str = ""
+
+
 class Allocation(BaseModel):
     plan_version: int = Field(ge=1)
     adopted: date
     notes: str = ""
     dca: DCA
     positions: list[Position]
+    closed_positions: list[ClosedPosition] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def _check_totals(self) -> "Allocation":
