@@ -10,4 +10,74 @@
 # Conviction: high | medium | low
 # Quality buckets: cash | finance | stability | profitability
 
-watchlist: []
+watchlist:
+  - ticker: MSCI
+    name: MSCI Inc.
+    sector: Financials / Data & Analytics
+    added_on: 2026-05-03
+    conviction: high
+    thesis_note: >-
+      Dominant index constructor and analytics platform; AUM-linked recurring subscription
+      fees create operating leverage as passive investing and fixed-income indexation grow.
+      Capital-light (~70% gross margin), near-zero marginal cost of data distribution, and
+      near-insurmountable moat — index rebalancing lock-in means switching cost is systemic.
+      Extends HLNE's private-markets compounding angle into data infrastructure.
+    screen_results: []
+    status: watching
+
+  - ticker: FICO
+    name: Fair Isaac Corporation
+    sector: Technology / Credit Scoring
+    added_on: 2026-05-03
+    conviction: high
+    thesis_note: >-
+      Near-monopoly in US credit decisioning; FICO Score is embedded in GSE mortgage
+      underwriting standards, creating structural pricing power with no credible substitute.
+      IP-based revenue model mirrors IDCC's licensing thesis but in a far larger addressable
+      market (all US consumer credit origination). Extreme ROIC and ROE from near-zero
+      incremental cost per score query.
+    screen_results: []
+    status: watching
+
+  - ticker: RPRX
+    name: Royalty Pharma
+    sector: Healthcare / Pharma Royalties
+    added_on: 2026-05-03
+    conviction: medium
+    thesis_note: >-
+      Pure-play pharma royalty aggregator across approved and late-stage drugs; no R&D cost,
+      no manufacturing risk, no commercial execution risk. Diversifies the royalty economics
+      thesis beyond HALO's ENHANZE platform across a broader drug portfolio (Imbruvica,
+      Tremfya, Nurtec, others). High FCF yield relative to sector; secular compounding as
+      deployed royalty capital generates recurring cash through patent life.
+    screen_results: []
+    status: watching
+
+  - ticker: VEEV
+    name: Veeva Systems
+    sector: Technology / Life Sciences SaaS
+    added_on: 2026-05-03
+    conviction: medium
+    thesis_note: >-
+      Mission-critical SaaS for pharma and biotech commercialization, clinical data, and
+      regulatory operations; deep workflow integration creates high switching costs. Active
+      transition from Salesforce to Vault CRM underpins medium-term revenue visibility and
+      expands total addressable platform within existing customers. Complements HALO's
+      healthcare thesis from the software and data infrastructure side.
+    screen_results: []
+    status: watching
+
+  - ticker: BR
+    name: Broadridge Financial Solutions
+    sector: Financials / B2B Infrastructure
+    added_on: 2026-05-03
+    conviction: medium
+    thesis_note: >-
+      Near-oligopoly in US proxy processing and investor communications; recurring SaaS fees
+      for trading operations, wealth management, and capital markets technology. Structural
+      demand driven by regulatory complexity and market fragmentation — not cyclical.
+      Capital-light, durable pricing power, and compounding recurring revenue base; similar
+      secular profile to HLNE but in financial services infrastructure rather than
+      alternatives distribution.
+    screen_results: []
+    status: watching
