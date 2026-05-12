@@ -76,13 +76,12 @@ jobs:
 
           | Ticker | Daily \$ |
           |---|---|
-          | VOO | \$29 |
-          | HLNE | \$15 |
-          | HALO | \$15 |
-          | ETN | \$14 |
-          | MKL | \$11 |
-          | IDCC | \$8 |
-          | P | \$8 |
+          | VOO | \$30 |
+          | HALO | \$20 |
+          | ETN | \$20 |
+          | IDCC | \$15 |
+          | P | \$10 |
+          | HLNE | \$5 |
 
           _Personal journal. Not financial advice._
           EOF

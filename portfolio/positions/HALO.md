@@ -1,13 +1,13 @@
 # HALO — Halozyme Therapeutics
 
-> Last reviewed: 2026-05-03 &nbsp;•&nbsp; Sector: Healthcare / Biotech &nbsp;•&nbsp; Target: 18% &nbsp;•&nbsp; Daily DCA: $18
+> Last reviewed: 2026-05-12 &nbsp;•&nbsp; Sector: Healthcare / Biotech &nbsp;•&nbsp; Target: 20% &nbsp;•&nbsp; Daily DCA: $20
 
 ## At a glance
 
 | Metric | Value |
 |---|---|
-| Target allocation | 18% |
-| Daily DCA | $18 |
+| Target allocation | 20% |
+| Daily DCA | $20 |
 
 ## Thesis
 
@@ -59,6 +59,8 @@ _Last refreshed: 2026-04-26 (placeholder)_
 ## News & notes
 
 <!-- news-start -->
+- 2026-05-12: Allocation increased 18% → 20% (DCA $18 → $20, plan v5). Co-core position with ETN. Funded by HLNE reduction.
+- 2026-05-11: Q1 2026 print. Revenue $376.7M (+42% YoY, +6.1% beat). Adj EPS $1.60 (+5.3% beat). Royalty revenue $240.7M (+43% YoY) on continued DARZALEX SC, VYVGART Hytrulo, Phesgo uptake. New $1B share repurchase authorization; ≥$400M to deploy in 2026. FY26 guidance reiterated: revenue $1.71–1.81B, adj EPS $7.75–8.25 (midpoint $8.00 vs consensus $8.09). Three new ENHANZE/Hypercon licensing deals signed YTD: Vertex, Oruka, GSK. Source: PR Newswire 2026-05-11.
 <!-- news-end -->
 
 ## Re-check schedule

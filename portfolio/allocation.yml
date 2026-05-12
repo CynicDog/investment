@@ -1,9 +1,20 @@
-plan_version: 4
-adopted: 2026-05-03
+plan_version: 5
+adopted: 2026-05-12
 notes: |
-  6-position allocation after MKL (Markel Group) position cleared on 2026-05-03.
-  MKL's $11/day DCA redistributed: HLNE +$3 (→$18), HALO +$3 (→$18), IDCC +$5 (→$13).
-  VOO, ETN, and P unchanged. HLNE and HALO remain highest conviction.
+  6-position allocation, post-HLNE de-risk (2026-05-12).
+
+  HLNE reduced from 18% → 5% on weakening conviction: Hunterbrook short report
+  (R-2026-05-001) + Q4 2025 institutional outflows (R-2026-04-001) downgraded
+  HLNE from "highest conviction" to token stake pending the May 21 Q4 FY2026
+  call. $13/day freed redistributed:
+    - ETN +$6 (→ 20%) — promoted from thematic side-bet to co-core position on AI power infra thesis
+    - HALO +$2 (→ 20%) — following 2026-05-11 Q1 beat (+42% YoY rev, +43% royalty rev, $1B buyback, 3 new ENHANZE/Hypercon deals with Vertex/Oruka/GSK)
+    - IDCC +$2 (→ 15%)
+    - P +$2 (→ 10%) — increased speculative weight per scenario S-2026-05-001
+    - VOO +$1 (→ 30%, clean anchor)
+
+  Co-core active positions are now HALO and ETN at 20% each. ETN dossier
+  thesis re-up due at next monthly review to match the new weight class.
 
 dca:
   cadence: daily-weekday      # 5 fills per week
@@ -13,44 +24,44 @@ positions:
   - ticker: VOO
     name: Vanguard S&P 500 ETF
     sector: Index
-    target_pct: 29
-    dca_per_day_usd: 29
+    target_pct: 30
+    dca_per_day_usd: 30
     role: Broad market anchor
-
-  - ticker: HLNE
-    name: Hamilton Lane
-    sector: Financials / Asset management
-    target_pct: 18
-    dca_per_day_usd: 18
-    role: Private markets growth (highest conviction)
 
   - ticker: HALO
     name: Halozyme Therapeutics
     sector: Healthcare / Biotech
-    target_pct: 18
-    dca_per_day_usd: 18
-    role: Healthcare royalties (highest conviction)
+    target_pct: 20
+    dca_per_day_usd: 20
+    role: Healthcare royalties (co-core)
 
   - ticker: ETN
     name: Eaton Corp
     sector: Industrials / Electrical
-    target_pct: 14
-    dca_per_day_usd: 14
-    role: AI power infrastructure
+    target_pct: 20
+    dca_per_day_usd: 20
+    role: AI power infrastructure (co-core)
 
   - ticker: IDCC
     name: InterDigital
     sector: Technology / IP licensing
-    target_pct: 13
-    dca_per_day_usd: 13
+    target_pct: 15
+    dca_per_day_usd: 15
     role: Patent licensing IP
 
   - ticker: P
     name: Everpure
     sector: Technology / Data infrastructure
-    target_pct: 8
-    dca_per_day_usd: 8
-    role: "Speculation: AI data infra pivot"
+    target_pct: 10
+    dca_per_day_usd: 10
+    role: "Speculation: AI data infra"
+
+  - ticker: HLNE
+    name: Hamilton Lane
+    sector: Financials / Asset management
+    target_pct: 5
+    dca_per_day_usd: 5
+    role: Private markets — de-risked pending 2026-05-21 Q4 FY2026 call
 
 closed_positions:
   - ticker: MKL

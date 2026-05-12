@@ -1,13 +1,13 @@
 # IDCC — InterDigital
 
-> Last reviewed: 2026-05-03 &nbsp;•&nbsp; Sector: Technology / IP licensing &nbsp;•&nbsp; Target: 13% &nbsp;•&nbsp; Daily DCA: $13
+> Last reviewed: 2026-05-12 &nbsp;•&nbsp; Sector: Technology / IP licensing &nbsp;•&nbsp; Target: 15% &nbsp;•&nbsp; Daily DCA: $15
 
 ## At a glance
 
 | Metric | Value |
 |---|---|
-| Target allocation | 13% |
-| Daily DCA | $13 |
+| Target allocation | 15% |
+| Daily DCA | $15 |
 
 ## Thesis
 
@@ -61,6 +61,7 @@ _Last refreshed: 2026-04-26 (placeholder)_
 ## News & notes
 
 <!-- news-start -->
+- 2026-05-12: Allocation increased 13% → 15% (DCA $13 → $15, plan v5). Funded by HLNE reduction.
 <!-- news-end -->
 
 ## Re-check schedule

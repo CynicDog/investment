@@ -1,13 +1,13 @@
 # ETN — Eaton Corp
 
-> Last reviewed: 2026-05-03 &nbsp;•&nbsp; Sector: Industrials / Electrical &nbsp;•&nbsp; Target: 14% &nbsp;•&nbsp; Daily DCA: $14
+> Last reviewed: 2026-05-12 &nbsp;•&nbsp; Sector: Industrials / Electrical &nbsp;•&nbsp; Target: 20% &nbsp;•&nbsp; Daily DCA: $20
 
 ## At a glance
 
 | Metric | Value |
 |---|---|
-| Target allocation | 14% |
-| Daily DCA | $14 |
+| Target allocation | 20% |
+| Daily DCA | $20 |
 
 ## Thesis
 
@@ -60,6 +60,7 @@ _Last refreshed: 2026-04-26 (placeholder)_
 ## News & notes
 
 <!-- news-start -->
+- 2026-05-12: Allocation increased 14% → 20% (DCA $14 → $20, plan v5). Promoted from thematic AI-power side-bet to co-core position alongside HALO. Funded by HLNE reduction. Thesis re-up due at next monthly review to reflect the new weight class — current dossier was written for a 14% conviction.
 <!-- news-end -->
 
 ## Re-check schedule

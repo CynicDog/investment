@@ -1,13 +1,13 @@
 # P — Everpure
 
-> Last reviewed: 2026-04-27 &nbsp;•&nbsp; Sector: Technology / Data infrastructure &nbsp;•&nbsp; Target: 8% &nbsp;•&nbsp; Daily DCA: $8
+> Last reviewed: 2026-05-12 &nbsp;•&nbsp; Sector: Technology / Data infrastructure &nbsp;•&nbsp; Target: 10% &nbsp;•&nbsp; Daily DCA: $10
 
 ## At a glance
 
 | Metric | Value |
 |---|---|
-| Target allocation | 8% |
-| Daily DCA | $8 |
+| Target allocation | 10% |
+| Daily DCA | $10 |
 
 ## Thesis
 
@@ -64,6 +64,7 @@ _Last refreshed: 2026-04-27 (placeholder)_
 ## News & notes
 
 <!-- news-start -->
+- 2026-05-12: Allocation increased 8% → 10% (DCA $8 → $10, plan v5). Funded by HLNE reduction. Note: this raises the dollar exposure tied to the close-by-2027-05-03 kill scenario S-2026-05-001 — if the time-gate trigger fires, $10/day (not $8) needs redistributing.
 <!-- news-end -->
 
 ## Re-check schedule

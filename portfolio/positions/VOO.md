@@ -1,17 +1,17 @@
 # VOO — Vanguard S&P 500 ETF
 
-> Last reviewed: 2026-05-03 &nbsp;•&nbsp; Sector: Index &nbsp;•&nbsp; Target: 29% &nbsp;•&nbsp; Daily DCA: $29
+> Last reviewed: 2026-05-12 &nbsp;•&nbsp; Sector: Index &nbsp;•&nbsp; Target: 30% &nbsp;•&nbsp; Daily DCA: $30
 
 ## At a glance
 
 | Metric | Value |
 |---|---|
-| Target allocation | 29% |
-| Daily DCA | $29 |
+| Target allocation | 30% |
+| Daily DCA | $30 |
 
 ## Thesis
 
-The portfolio anchor. Owns the 500 largest US companies at low cost (expense ratio ~0.03%). Mechanical exposure to US large-cap earnings growth and the long-run equity risk premium. Sized at 29% — the largest single position — to absorb the diversification work the concentrated single-name sleeve does not do. Held indefinitely.
+The portfolio anchor. Owns the 500 largest US companies at low cost (expense ratio ~0.03%). Mechanical exposure to US large-cap earnings growth and the long-run equity risk premium. Sized at 30% — the largest single position — to absorb the diversification work the concentrated single-name sleeve does not do. Held indefinitely.
 
 ## Bull case
 
@@ -53,7 +53,7 @@ _Aggregate S&P 500 earnings — populated by weekly review._
 ## News & notes
 
 <!-- news-start -->
-_Weekly review action appends dated bullets here. Most recent first._
+- 2026-05-12: Allocation increased 29% → 30% (DCA $29 → $30, plan v5) for clean anchor weight. Funded by HLNE reduction (18% → 5%).
 <!-- news-end -->
 
 ## Re-check schedule

@@ -1,17 +1,19 @@
 # HLNE — Hamilton Lane
 
-> Last reviewed: 2026-05-03 &nbsp;•&nbsp; Sector: Financials / Asset management &nbsp;•&nbsp; Target: 18% &nbsp;•&nbsp; Daily DCA: $18
+> Last reviewed: 2026-05-12 &nbsp;•&nbsp; Sector: Financials / Asset management &nbsp;•&nbsp; Target: 5% &nbsp;•&nbsp; Daily DCA: $5
 
 ## At a glance
 
 | Metric | Value |
 |---|---|
-| Target allocation | 18% |
-| Daily DCA | $18 |
+| Target allocation | 5% (de-risked) |
+| Daily DCA | $5 |
 
 ## Thesis
 
-Top-tier single-name pick — tied with HALO at 18% as the highest-conviction names after VOO. Private-markets advisor / fund-of-funds platform riding a real secular tailwind: institutional and HNW capital continues shifting from public equities into private equity, private credit, infrastructure, and real assets. HLNE earns recurring management/advisory fees on AUM plus carry, with operating leverage as scale builds. Capital-light, founder-aligned, and trading at a fair (not stretched) multiple given AUM growth visibility.
+Token stake (5%) pending the 2026-05-21 Q4 FY2026 earnings call. Original thesis: private-markets advisor / fund-of-funds platform riding a real secular tailwind — institutional and HNW capital continues shifting from public equities into private equity, private credit, infrastructure, and real assets. HLNE earns recurring management/advisory fees on AUM plus carry, with operating leverage as scale builds. Capital-light, founder-aligned, and historically traded at a fair multiple given AUM growth visibility.
+
+**Conviction reset (2026-05-12):** Reduced from 18% → 5% on weakening conviction. Two open risks dominate the picture: (1) Hunterbrook short report alleging FRE margin manipulation and day-one markups (R-2026-05-001), and (2) Q4 2025 institutional liquidation by T. Rowe (-83%), Invesco (-65%), Millennium (-97%) (R-2026-04-001). Both resolve — or get worse — at the May 21 call. Position size reflects "show me" rather than "highest conviction" until then.
 
 ## Bull case
 
@@ -60,6 +62,7 @@ _Last refreshed: 2026-04-26 (placeholder)_
 ## News & notes
 
 <!-- news-start -->
+- 2026-05-12: Allocation reduced 18% → 5% (DCA $18 → $5, plan v5). De-risked pending 2026-05-21 Q4 FY2026 call. $13/day freed redistributed to ETN (+$6), HALO (+$2), IDCC (+$2), P (+$2), VOO (+$1). Two open risks (R-2026-04-001, R-2026-05-001) explicitly cite the May 21 call as the resolution catalyst.
 <!-- news-end -->
 
 ## Re-check schedule
